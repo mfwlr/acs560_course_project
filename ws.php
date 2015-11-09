@@ -18,6 +18,7 @@ $s = $_REQUEST['s'];
 $c = $_REQUEST['c'];
 $t = $_REQUEST['t'];
 
+$resultsArray;
 
 $sql = "SELECT sm.state_description,
                cs.county, 
@@ -54,16 +55,27 @@ if (!$result = $mysqli->query($sql)) {
 </tr>
 
 <?php
-
+$ctr=0;
  while ($row = $result->fetch_array()) {
+ 
+ 		$resultsArray[$ctr] = array("state"=>$row["state_description"],"county"=>$row["county"],"cancer_type"=>$row["type_description"],"rate"=>$row["annual_incidence_rate"],"trend"=>$row["recent_trend"]);
         echo "<tr><td>".$row["state_description"]."</td><td>".$row["county"]."</td><td>".$row["type_description"]."</td><td>".$row["annual_incidence_rate"]."</td><td>".$row["recent_trend"]."</td></tr>";
+        
+        $ctr++;
     }
+
+
+
 
 $mysqli->close();
 ?>
 
 </table>
 
-
+<p>
+<?php
+echo json_encode($resultsArray);
+?>
+</p>
 
 
