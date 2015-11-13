@@ -1,0 +1,13 @@
+RewriteEngine   on
+RewriteBase /
+
+
+Options +FollowSymLinks
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+
+
+#http://ws.instrumentsafe.com/ws.php?s=18&t=40&c=allen
+RewriteRule ^r/?$ ws.php [L,QSA,NC]
+RewriteRule ^r/(.*)/(.*)/?$ ws.php?s=$1&t=$2 [L,QSA,NC]
+RewriteRule ^r/(.*)/(.*)/(.*)/?$ ws.php?s=$1&t=$2&c=$3 [L,QSA,NC]
