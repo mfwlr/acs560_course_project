@@ -1,9 +1,6 @@
 <?php
 
-
-// db = mdb.connect(host="mysql.dev.tomcastonzo.com", user="cancer_db_user", passwd="&E@^5bXJ", db="cancer_db")
-
-
+require ("/home/isafeuser/ws.instrumentsafe.com/config.php");
 
 
 $s = $_REQUEST['s'];
@@ -20,7 +17,7 @@ getIncidenceRankingsByCountyWithinState($s,$c,$t);
 function getIncidenceRankingsByCountyWithinState($state,$county,$type){
 
 
-$mysqli = new mysqli("mysql.dev.tomcastonzo.com", "cancer_db_user", "&E@^5bXJ", "cancer_db");
+$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_DATABASE);
 
 
 if (mysqli_connect_errno()) {
@@ -28,12 +25,10 @@ if (mysqli_connect_errno()) {
     exit();
 }
 
-/* change db to world db */
-$mysqli->select_db("cancer_db");
-
 
 $cancerDescription = "";
 $userState="";
+
 $sql = "SELECT
 		cs.state_code,
 		cs.county,
@@ -161,16 +156,12 @@ echo json_encode($array3);
 function getIncidenceRankingWithinCountry($state,$county,$type){
 
 
-$mysqli = new mysqli("mysql.dev.tomcastonzo.com", "cancer_db_user", "&E@^5bXJ", "cancer_db");
-
+$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_DATABASE);
 
 if (mysqli_connect_errno()) {
     printf("Connect failed: %s\n", mysqli_connect_error());
     exit();
 }
-
-/* change db to world db */
-$mysqli->select_db("cancer_db");
 
 
 $cancerDescription = "";
@@ -283,7 +274,7 @@ function getIncidenceForCounty($state,$county,$type,$returnType="JSON"){
 $resultsArray;
 
 
-$mysqli = new mysqli("mysql.dev.tomcastonzo.com", "cancer_db_user", "&E@^5bXJ", "cancer_db");
+$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_DATABASE);
 
 
 if (mysqli_connect_errno()) {
@@ -291,8 +282,6 @@ if (mysqli_connect_errno()) {
     exit();
 }
 
-
-$mysqli->select_db("cancer_db");
 
 
 $sql = "SELECT sm.state_description,
