@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context="com.example.maxfowler.regionalhealthmonitor.RHMLogin">
+
+    <RelativeLayout
+        android:id="@+id/loadingPanel"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ProgressBar
+            android:id="@+id/progBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            android:layout_marginLeft="250dp"
+            android:layout_marginRight="250dp"
+            android:layout_marginTop="100dp"
+            android:progressTint="#bb9602ff"
+            android:progressTintMode="multiply" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/logPanel"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="LOGIN"
+        android:id="@+id/logButton"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"
+        android:height="25dp"
+        android:width="200dp"
+        android:textSize="20dp"
+        android:textColor="#ffffff"
+        android:textAlignment="center"
+        android:background="#0629b6" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="textEmailAddress"
+        android:ems="10"
+        android:id="@+id/logName"
+        android:layout_alignParentLeft="true"
+        android:layout_marginBottom="108dp"
+        android:background="#000986"
+        android:width="500dp"
+        android:height="40dp"
+        android:textColor="#ffffff"
+        android:layout_above="@+id/logButton"
+        android:layout_alignParentRight="true"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="textPassword"
+        android:ems="10"
+        android:id="@+id/logPass"
+        android:layout_alignParentLeft="true"
+        android:layout_alignTop="@+id/logName"
+        android:layout_alignLeft="@+id/logName"
+        android:layout_alignStart="@+id/logName"
+        android:layout_marginTop="36dp"
+        android:width="500dp"
+        android:background="#000986"
+        android:textColor="#ffffff"
+        android:layout_alignParentRight="true"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp" />
+    </RelativeLayout>
+
+</RelativeLayout>
