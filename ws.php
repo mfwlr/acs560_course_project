@@ -3,9 +3,25 @@
 require ("/home/isafeuser/ws.instrumentsafe.com/config.php");
 
 
-$s = $_REQUEST['s'];
-$c = $_REQUEST['c'];
-$t = $_REQUEST['t'];
+$s = trim($_REQUEST['s']);
+$c = trim($_REQUEST['c']);
+$t = trim($_REQUEST['t']);
+
+
+
+if(!isValidWholeNumber($s) || !isValidWholeNumber($t) || !isValidAlphaString($c)){
+
+	     $errorMsg = "Invalid ".(!isValidWholeNumber($s) ? " state code" : "");
+	     $errorMsg .=(!isValidWholeNumber($t) ? " type code" : "");
+	     $errorMsg .=(!isValidAlphaString($c) ? " county string" : "");
+	    
+		$errorResultArr = array("error"=>1,
+				  "error_message"=>$errorMsg); 		                            
+
+	header('Content-type: application/json');
+	echo json_encode($errorResultArr);
+	exit();
+}
 
 
 
@@ -16,45 +32,45 @@ getIncidenceRankingsByCountyWithinState($s,$c,$t);
 
 function getIncidenceRankingsByCountyWithinState($state,$county,$type){
 
-
-$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_DATABASE);
-
-
-if (mysqli_connect_errno()) {
-    printf("Connect failed: %s\n", mysqli_connect_error());
-    exit();
-}
+	$cancerDescription = "";
+	$userState="";
+	$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_DATABASE);
 
 
-$cancerDescription = "";
-$userState="";
-
-$sql = "SELECT
-		cs.state_code,
-		cs.county,
-		(SELECT state_description from state_map WHERE state_id=cs.state_code) as state_description,
-		(SELECT state_code from state_map WHERE state_id=cs.state_code) as state_abbrev,
-		cs.cancer_type_code,
-		(SELECT type_description from cancer_type_map WHERE type_code=cs.cancer_type_code) as cancer_description,
-		cs.annual_incidence_rate,
-		cs.rate_period,
-		cs.recent_trend,
-		@curRank := @curRank + 1 AS rank 
-		FROM cancer_stats AS cs,(SELECT @curRank := 0) r  
-		WHERE annual_incidence_rate IS NOT NULL
-		AND cs.cancer_type_code = '".mysqli_real_escape_string($mysqli,$type)."'
-		AND cs.state_code = '".mysqli_real_escape_string($mysqli,$state)."'
-		ORDER BY  cs.annual_incidence_rate DESC;";
+	if (mysqli_connect_errno()) {
+    	printf("Connect failed: %s\n", mysqli_connect_error());
+    	exit();
+	}
 
 
-if (!$result = $mysqli->query($sql)) {
 
-    die ('There was an error running query[' . $connection->error . ']');
+
+	$sql = "SELECT
+			cs.state_code,
+			cs.county,
+			(SELECT state_description from state_map WHERE state_id=cs.state_code) as state_description,
+			(SELECT state_code from state_map WHERE state_id=cs.state_code) as state_abbrev,
+			cs.cancer_type_code,
+			(SELECT type_description from cancer_type_map WHERE type_code=cs.cancer_type_code) as cancer_description,
+			cs.annual_incidence_rate,
+			cs.rate_period,
+			cs.recent_trend,
+			@curRank := @curRank + 1 AS rank 
+			FROM cancer_stats AS cs,(SELECT @curRank := 0) r  
+			WHERE annual_incidence_rate IS NOT NULL
+			AND cs.cancer_type_code = '".mysqli_real_escape_string($mysqli,$type)."'
+			AND cs.state_code = '".mysqli_real_escape_string($mysqli,$state)."'
+			ORDER BY  cs.annual_incidence_rate DESC;";
+
+
+	if (!$result = $mysqli->query($sql)) {
+
+    	die ('There was an error running query[' . $connection->error . ']');
     
-}
+	}
 
-$ctr=0;
- while ($row = $result->fetch_array()) {
+	$ctr=0;
+ 	while ($row = $result->fetch_array()) {
  
  		
  		
@@ -80,13 +96,9 @@ $ctr=0;
  		                            "rate"=>$row["annual_incidence_rate"],
  		                            "trend"=>($row["recent_trend"] !="" ? $row["recent_trend"] : "unknown"),
  		                            "ranking"=>$row["rank"],
- 		                            "rank_status"=>$status
- 		                            );
+ 		                            "rank_status"=>$status);
  		                            
  		                            
- 		
-
- 	                           
  		if($resultsArray[$ctr]["state_code"] == $state && strtolower($resultsArray[$ctr]["county"]) == strtolower($county)){
 				
 				$currUserState = $resultsArray[$ctr]["state"];
@@ -94,61 +106,48 @@ $ctr=0;
 				$currUserRank = $resultsArray[$ctr]["ranking"];
 				$currUserRate = $resultsArray[$ctr]["rate"];
 				
-								
-				}
+		}
 			
-
-
-        
-        
-        $ctr++;
+		$ctr++;
     }
 
-$worstState = $resultsArray[0]["state"];
-$worstCounty = $resultsArray[0]["county"];
-$worstRank = $resultsArray[0]["ranking"];
-$worstIncidenceRate = $resultsArray[0]["rate"];
+	$worstState = $resultsArray[0]["state"];
+	$worstCounty = $resultsArray[0]["county"];
+	$worstRank = $resultsArray[0]["ranking"];
+	$worstIncidenceRate = $resultsArray[0]["rate"];
 
 
 
-$bestState = $resultsArray[$result->num_rows -1]["state"];
-$bestCounty = $resultsArray[$result->num_rows -1]["county"];
-$bestRank = ($resultsArray[$result->num_rows -1]["ranking"]);
-$bestIncidenceRate = $resultsArray[$result->num_rows -1]["rate"];
+	$bestState = $resultsArray[$result->num_rows -1]["state"];
+	$bestCounty = $resultsArray[$result->num_rows -1]["county"];
+	$bestRank = ($resultsArray[$result->num_rows -1]["ranking"]);
+	$bestIncidenceRate = $resultsArray[$result->num_rows -1]["rate"];
 
 
 
-$countryWideStatsArr = getIncidenceRankingWithinCountry($state,$county,$type);
+	$countryWideStatsArr = getIncidenceRankingWithinCountry($state,$county,$type);
 
 
 
-$statsArr = array("cancer_type"=>$cancerDescription,
-				  "user_state"=>$userState,
-				  "user_county"=>$currUserCounty,
-				  "user_incidence_rate"=>$currUserRate,
-				  "worst_incidence_rate_in_state"=>$worstIncidenceRate,
-				  "best_incidence_rate_in_state"=>$bestIncidenceRate,
-				  "user_rank"=>$currUserRank,
-				  "worst_rank_in_state"=>$worstRank,
-				  "best_rank_in_state"=>$bestRank,
-				  "worst_county_in_state"=>$worstCounty,
-				  "best_county_in_state"=>$bestCounty,
-				  
-				  
-				  
-				  );
+	$statsArr = array("cancer_type"=>$cancerDescription,
+				  	  "user_state"=>$userState,
+				  	  "user_county"=>$currUserCounty,
+				  	  "user_incidence_rate"=>$currUserRate,
+				  	  "worst_incidence_rate_in_state"=>$worstIncidenceRate,
+				      "best_incidence_rate_in_state"=>$bestIncidenceRate,
+				      "user_rank"=>$currUserRank,
+				      "worst_rank_in_state"=>$worstRank,
+				  	  "best_rank_in_state"=>$bestRank,
+				      "worst_county_in_state"=>$worstCounty,
+				      "best_county_in_state"=>$bestCounty);
 
 
-$array3 = array_merge($statsArr, $countryWideStatsArr);
+	$countyStateStatsArray = array_merge($statsArr, $countryWideStatsArr);
 
-$mysqli->close();
-
-
-header('Content-type: application/json');
-echo json_encode($array3);
-
-
-
+	$mysqli->close();
+		
+	header('Content-type: application/json');
+	echo json_encode($countyStateStatsArray);
 
 }
 
@@ -156,16 +155,17 @@ echo json_encode($array3);
 function getIncidenceRankingWithinCountry($state,$county,$type){
 
 
-$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_DATABASE);
+	$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_DATABASE);
 
-if (mysqli_connect_errno()) {
-    printf("Connect failed: %s\n", mysqli_connect_error());
-    exit();
-}
+	if (mysqli_connect_errno()) {
+    	printf("Connect failed: %s\n", mysqli_connect_error());
+    	exit();
+	}
 
 
-$cancerDescription = "";
-$sql = "SELECT
+	$cancerDescription = "";
+	
+	$sql = "SELECT
 		cs.state_code,
 		cs.county,
 		(SELECT state_description from state_map WHERE state_id=cs.state_code) as state_description,
@@ -181,20 +181,18 @@ $sql = "SELECT
 		AND cs.cancer_type_code = '".mysqli_real_escape_string($mysqli,$type)."'
 		ORDER BY  cs.annual_incidence_rate DESC;";
 
-//echo $sql;
 
-if (!$result = $mysqli->query($sql)) {
 
-    die ('There was an error running query[' . $connection->error . ']');
+	if (!$result = $mysqli->query($sql)) {
+
+    	die ('There was an error running query[' . $connection->error . ']');
     
-}
+	}
 
-$ctr=0;
- while ($row = $result->fetch_array()) {
+	$ctr=0;
+ 	while ($row = $result->fetch_array()) {
  
- 		
- 		
- 		if($cancerDescription ==""){
+		if($cancerDescription ==""){
  			
  			$cancerDescription = $row["cancer_description"];
  			
@@ -224,28 +222,24 @@ $ctr=0;
 								
 				}
 			
-
-
-        
-        
-        $ctr++;
+		$ctr++;
     }
 
-$worstState = $resultsArray[0]["country_state"];
-$worstCounty = $resultsArray[0]["country_county"];
-$worstRank = $resultsArray[0]["country_ranking"];
-$worstIncidenceRate = $resultsArray[0]["country_rate"];
+	$worstState = $resultsArray[0]["country_state"];
+	$worstCounty = $resultsArray[0]["country_county"];
+	$worstRank = $resultsArray[0]["country_ranking"];
+	$worstIncidenceRate = $resultsArray[0]["country_rate"];
 
 
 
-$bestState = $resultsArray[$result->num_rows -1]["country_state"];
-$bestCounty = $resultsArray[$result->num_rows -1]["country_county"];
-$bestRank = ($resultsArray[$result->num_rows -1]["country_ranking"]);
-$bestIncidenceRate = $resultsArray[$result->num_rows -1]["country_rate"];
+	$bestState = $resultsArray[$result->num_rows -1]["country_state"];
+	$bestCounty = $resultsArray[$result->num_rows -1]["country_county"];
+	$bestRank = ($resultsArray[$result->num_rows -1]["country_ranking"]);
+	$bestIncidenceRate = $resultsArray[$result->num_rows -1]["country_rate"];
 
 
 
-$statsArr = array("country_worst_state"=>$worstState,
+	$statsArr = array("country_worst_state"=>$worstState,
 				  "country_worst_county"=>$worstCounty,
 				  "country_worst_worst_rank"=>$worstRank,
 				  "country_worst_worst_incidence_rate"=>$worstIncidenceRate,
@@ -259,71 +253,24 @@ $statsArr = array("country_worst_state"=>$worstState,
 				  );
 
 
-$mysqli->close();
+	$mysqli->close();
 
 
-return $statsArr;
-
-
-
+	return $statsArr;
 
 }
 
+function isValidWholeNumber($code){
 
-function getIncidenceForCounty($state,$county,$type,$returnType="JSON"){
-$resultsArray;
+	return preg_match('/^[0-9]+$/', $code);
+}
 
+function isValidAlphaString($county){
 
-$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_DATABASE);
-
-
-if (mysqli_connect_errno()) {
-    printf("Connect failed: %s\n", mysqli_connect_error());
-    exit();
+	return preg_match('/^[A-Z]+$/i', $county);
 }
 
 
-
-$sql = "SELECT sm.state_description,
-               cs.county, 
-               ctm.type_description,
-               annual_incidence_rate,
-               cs.rate_period,
-               cs.recent_trend  
-               FROM cancer_stats cs  
-               JOIN state_map sm ON sm.state_id = cs.state_code 
-               JOIN cancer_type_map ctm ON ctm.type_code = cs.cancer_type_code 
-               where annual_incidence_rate IS NOT NULL 
-               AND cs.state_code=".$state." 
-               AND cs.county='".$county."' 
-               AND cs.cancer_type_code=".$type." ORDER BY  annual_incidence_rate DESC";
-               
-               
-              
-
-if (!$result = $mysqli->query($sql)) {
-    echo $sql;
-    die ('There was an error running query[' . $connection->error . ']');
-    
-}
-
-$ctr=0;
- while ($row = $result->fetch_array()) {
- 
- 		$resultsArray[$ctr] = array("state"=>$row["state_description"],"county"=>$row["county"],"cancer_type"=>$row["type_description"],"rate"=>$row["annual_incidence_rate"],"trend"=>($row["recent_trend"] !="" ? $row["recent_trend"] : "unknown"));
-        
-        
-        $ctr++;
-    }
-
-
-
-
-$mysqli->close();
-
-header('Content-type: application/json');
-echo json_encode($resultsArray);
-}
 ?>
 
 
