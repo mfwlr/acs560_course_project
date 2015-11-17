@@ -277,15 +277,15 @@ function getRanking($bestRank,$userRank){
 	
 	
 	if($userRank > $segment * 3)
-			   return 4;
+		return 4;
 
 
 	else if($userRank > $segment * 2)
-				return 3;
+		return 3;
 			
 			
 	else if($userRank > $segment)
-				return 2;
+		return 2;
 			
 
 	else 
@@ -294,6 +294,3 @@ function getRanking($bestRank,$userRank){
 
 
 ?>
-
-
-
