@@ -138,6 +138,7 @@ function getIncidenceRankingsByCountyWithinState($state,$county,$type){
 				      "user_rank"=>$currUserRank,
 				      "worst_rank_in_state"=>$worstRank,
 				  	  "best_rank_in_state"=>$bestRank,
+				  	  "state_star_ranking"=>getRanking($bestRank,$currUserRank),
 				      "worst_county_in_state"=>$worstCounty,
 				      "best_county_in_state"=>$bestCounty);
 
@@ -207,6 +208,7 @@ function getIncidenceRankingWithinCountry($state,$county,$type){
  		                            "country_trend"=>($row["recent_trend"] !="" ? $row["recent_trend"] : "unknown"),
  		                            "country_ranking"=>$row["rank"],
  		                            "country_rank_status"=>$status
+ 		                            
  		                            );
  		                            
  		                            
@@ -248,6 +250,7 @@ function getIncidenceRankingWithinCountry($state,$county,$type){
 				  "country_best_state"=>$bestState,
 				  "country_best_county"=>$bestCounty,
 				  "country_best_incidence_rate"=>$bestIncidenceRate,
+				  "country_star_ranking"=>getRanking($bestRank,$currUserRank),
 				  "country_curr_user_incidence_rate"=>$currUserRate);
 
 
@@ -266,6 +269,27 @@ function isValidWholeNumber($code){
 function isValidAlphaString($county){
 
 	return preg_match('/^[A-Z]+$/i', $county);
+}
+
+function getRanking($bestRank,$userRank){
+
+	$segment = ($bestRank / 4.0);
+	
+	
+	if($userRank > $segment * 3)
+			   return 4;
+
+
+	else if($userRank > $segment * 2)
+				return 3;
+			
+			
+	else if($userRank > $segment)
+				return 2;
+			
+
+	else 
+		return 1;
 }
 
 
