@@ -241,16 +241,14 @@ function getIncidenceRankingWithinCountry($state,$county,$type){
 
 	$statsArr = array("country_worst_state"=>$worstState,
 				  "country_worst_county"=>$worstCounty,
+				  "country_curr_user_rank"=>$currUserRank,
 				  "country_worst_worst_rank"=>$worstRank,
+				  "country_best_rank"=>$bestRank,
 				  "country_worst_worst_incidence_rate"=>$worstIncidenceRate,
 				  "country_best_state"=>$bestState,
 				  "country_best_county"=>$bestCounty,
-				  "country_best_rank"=>$bestRank,
 				  "country_best_incidence_rate"=>$bestIncidenceRate,
-				  "country_curr_user_incidence_rate"=>$currUserRate,
-				  "country_curr_user_rank"=>$currUserRank
-				  
-				  );
+				  "country_curr_user_incidence_rate"=>$currUserRate);
 
 
 	$mysqli->close();
