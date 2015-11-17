@@ -42,8 +42,8 @@ $sql = "SELECT
 		@curRank := @curRank + 1 AS rank 
 		FROM cancer_stats AS cs,(SELECT @curRank := 0) r  
 		WHERE annual_incidence_rate IS NOT NULL
-		AND cs.cancer_type_code = '".$type."'
-		AND cs.state_code = '".$state."'
+		AND cs.cancer_type_code = '".mysqli_real_escape_string($mysqli,$type)."'
+		AND cs.state_code = '".mysqli_real_escape_string($mysqli,$state)."'
 		ORDER BY  cs.annual_incidence_rate DESC;";
 
 
@@ -178,7 +178,7 @@ $sql = "SELECT
 		@curRank := @curRank + 1 AS rank 
 		FROM cancer_stats AS cs,(SELECT @curRank := 0) r  
 		WHERE annual_incidence_rate IS NOT NULL
-		AND cs.cancer_type_code = '".$type."'
+		AND cs.cancer_type_code = '".mysqli_real_escape_string($mysqli,$type)."'
 		ORDER BY  cs.annual_incidence_rate DESC;";
 
 //echo $sql;
