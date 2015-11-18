@@ -3,29 +3,14 @@
 require ("/home/isafeuser/ws.instrumentsafe.com/config.php");
 
 
-$s = trim($_REQUEST['s']);
-$c = trim($_REQUEST['c']);
-$t = trim($_REQUEST['t']);
+$stateCode = trim($_REQUEST['s']);
+$countyCode = trim($_REQUEST['c']);
+$typeCode = trim($_REQUEST['t']);
+
+validateInputData($stateCode,$typeCode,$countyCode);
 
 
-
-if(!isValidWholeNumber($s) || !isValidWholeNumber($t) || !isValidAlphaString($c)){
-
-	     $errorMsg = "Invalid ".(!isValidWholeNumber($s) ? " state code" : "");
-	     $errorMsg .=(!isValidWholeNumber($t) ? " type code" : "");
-	     $errorMsg .=(!isValidAlphaString($c) ? " county string" : "");
-	    
-		$errorResultArr = array("error"=>1,
-				  "error_message"=>$errorMsg); 		                            
-
-	header('Content-type: application/json');
-	echo json_encode($errorResultArr);
-	exit();
-}
-
-
-
-getIncidenceRankingsByCountyWithinState($s,$c,$t);
+getIncidenceRankingsByCountyWithinState($stateCode,$countyCode,$typeCode);
 
 
 
@@ -295,6 +280,25 @@ function getRanking($bestRank,$userRank){
 
 	else 
 		return 1;
+}
+
+function validateInputData($s,$t,$c){
+
+	if(!isValidWholeNumber($s) || !isValidWholeNumber($t) || !isValidAlphaString($c)){
+
+	     $errorMsg = "Invalid ".(!isValidWholeNumber($s) ? " state code" : "");
+	     $errorMsg .=(!isValidWholeNumber($t) ? " type code" : "");
+	     $errorMsg .=(!isValidAlphaString($c) ? " county string" : "");
+	    
+		$errorResultArr = array("error"=>1,
+				  "error_message"=>$errorMsg); 		                            
+
+		header('Content-type: application/json');
+		echo json_encode($errorResultArr);
+		exit();
+	}
+
+
 }
 
 
