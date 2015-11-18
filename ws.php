@@ -13,7 +13,9 @@ validateInputData($stateCode,$typeCode,$countyCode);
 getIncidenceRankingsByCountyWithinState($stateCode,$countyCode,$typeCode);
 
 
-
+/**********************************************************************
+   Method implementations
+***********************************************************************/
 
 function getIncidenceRankingsByCountyWithinState($state,$county,$type){
 
