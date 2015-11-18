@@ -274,7 +274,7 @@ function isValidAlphaString($county){
 function getRanking($bestRank,$userRank){
 
 	
-	if(!$bestRank > 0 || !$userRank > 0)
+	if(($bestRank < 1 || $bestRank=="") || ($userRank < 1 || $userRank ==""))
 		return -1;
 	
 	
@@ -299,6 +299,3 @@ function getRanking($bestRank,$userRank){
 
 
 ?>
-
-
-
