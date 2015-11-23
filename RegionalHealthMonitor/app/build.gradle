@@ -1,5 +1,16 @@
 apply plugin: 'com.android.application'
 
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:23.1.0'
+    compile 'com.google.android.gms:play-services:8.1.0'
+    compile files('libs/httpclient-4.5.1.jar')
+    compile files('libs/httpcore-4.4.3.jar')
+}
+
+
+
 android {
     compileSdkVersion 23
     buildToolsVersion "23.0.2"
@@ -20,12 +31,20 @@ android {
         debug {
             resValue "string", "google_maps_api_key", "AIzaSyB-ZVLkvCIsew6XfPIl1GZZHHgIfaNMr1M"
         }
+
+        android{
+            packagingOptions{
+                exclude 'META-INF/DEPENDENCIES'
+                exclude 'META-INF/LICENSE'
+                exclude 'META-INF/LICENSE.txt'
+                exclude 'META-INF/license.txt'
+                exclude 'META-INF/NOTICE'
+                exclude 'META-INF/NOTICE.txt'
+                exclude 'META-INF/notice.txt'
+                exclude 'META-INF/ASL2.0'
+            }
+
+        }
     }
 }
 
-dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.1.0'
-    compile 'com.google.android.gms:play-services:8.1.0'
-}

@@ -13,6 +13,7 @@ public class RHMLogin extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        RHMDataCenter.initStateLookUp();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rhmlogin);
 

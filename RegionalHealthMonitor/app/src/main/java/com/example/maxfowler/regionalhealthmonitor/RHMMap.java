@@ -7,7 +7,11 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 
 import android.app.Dialog;
+import android.app.AlertDialog;
 import android.widget.TextView;
+import android.view.View;
+import android.widget.PopupMenu;
+import android.view.MenuInflater;
 
 import android.util.Log;
 
@@ -23,17 +27,41 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Marker;
 
+import android.widget.PopupMenu;
+import android.view.MenuItem;
 
 
 /**
  * Created by maxfowler on 11/5/15.
  */
-public class RHMMap extends Activity implements OnMapReadyCallback, LocationListener{
+public class RHMMap extends Activity implements OnMapReadyCallback, LocationListener, PopupMenu.OnMenuItemClickListener{
+
+    private String currentCounty;
+    private boolean usePosition;
+    private LatLng pos;
+    private int cancerType;
+    private String cancerName;
     private GoogleMap mMap;
+
+    private PopupMenu popup;
+
+    private Marker curMarker;
+
+    private double curLat;
+    private double curLon;
+
+    private RHMPointData currentRPD;
+
     public void onCreate(Bundle instanceState){
         super.onCreate(instanceState);
         setContentView(R.layout.rhmmap);
+
+        usePosition = true;
+        cancerType = 40;
+        cancerName = "Pancreas";
 
         MapFragment mf = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
         mf.getMapAsync(this);
@@ -45,6 +73,10 @@ public class RHMMap extends Activity implements OnMapReadyCallback, LocationList
     }
 
     public Location getLocation(){
+
+        if(!usePosition){
+            return null;
+        }
         // Getting LocationManager object from System Service LOCATION_SERVICE
 
         LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
@@ -80,14 +112,53 @@ public class RHMMap extends Activity implements OnMapReadyCallback, LocationList
     }
 
     public void onMapReady(GoogleMap googleMap) {
+
         mMap = googleMap;
         Location location = getLocation();
 
-        LatLng pos = new LatLng(location.getLatitude(), location.getLongitude());
-        mMap.addMarker(new MarkerOptions().position(pos).title("Current Location"));
+
+        //View file for pin
+        RHMInfoPane rip = new RHMInfoPane(getBaseContext());
+        mMap.setInfoWindowAdapter(rip);
+
+
+        double lat = 0;
+        double lon = 0;
+        if(location != null) {
+            pos = new LatLng(location.getLatitude(), location.getLongitude());
+            lat = location.getLatitude();
+            lon = location.getLongitude();
+        }
+        else if(usePosition == true){
+            pos = new LatLng(41, -85);
+            lat = 41;
+            lon = -85;
+        }
+
+        placeMaker(lat, lon);
+        curLat = lat;
+        curLon = lon;
+
+
+    }
+
+    public void placeMaker(double lat, double lon){
+
+
+        String stateName = RHMDataCenter.getState(lat, lon, getBaseContext());
+
+        String countyName = RHMDataCenter.getCounty(lat, lon);
+
+        String s = lat+"\n"+lon+
+                "\n\nCounty name: " + countyName
+                +"\n\nState name: " + stateName;
+
+        // new AlertDialog.Builder(this).setTitle("Sample").setMessage(s).show();
+
+        currentRPD = RHMDataCenter.makeRPD(countyName, cancerName, cancerType, stateName);
+        curMarker = mMap.addMarker(new MarkerOptions().position(pos).title(currentRPD.buildTitle()).snippet(currentRPD.buildSnippet()).icon(BitmapDescriptorFactory.defaultMarker(currentRPD.severityHue())));
         CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(pos, 12);
         mMap.moveCamera(cu);
-
     }
 
     @Override
@@ -146,6 +217,61 @@ public class RHMMap extends Activity implements OnMapReadyCallback, LocationList
 
         // TODO Auto-generated method stub
 
+    }
+
+
+    public void showPopup(View v) {
+        popup = new PopupMenu(this, v);
+        MenuInflater inflater = popup.getMenuInflater();
+       inflater.inflate(R.menu.menu, popup.getMenu());
+        popup.show();
+        //Change cancer type
+        cancerName = "Leukemia";
+        cancerType = 90;
+        curMarker.remove();
+        System.out.println("Working?");
+        placeMaker(curLat, curLon);
+    }
+
+    public boolean onMenuItemClick(MenuItem item) {
+        System.out.println("HAHAHAHA");
+        System.out.println(item.getItemId());
+        switch (item.getItemId()) {
+            case R.id.one:
+
+               break;
+            case R.id.two:
+
+               break;
+            case R.id.three:
+
+                break;
+            case R.id.four:
+
+                break;
+            case R.id.five:
+
+                break;
+            case R.id.six:
+
+                break;
+            case R.id.seven:
+
+                return true;
+            case R.id.eight:
+                cancerName = "Leukemia";
+                cancerType = 90;
+                break;
+
+            case R.id.nine:
+                cancerName = "Pancreas";
+                cancerType = 40;
+                break;
+            default:
+                return false;
+        }
+        placeMaker(curLat, curLon);
+        return true;
     }
 
 
