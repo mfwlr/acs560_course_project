@@ -1,0 +1,40 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="@color/grey">
+
+    <item
+        android:id="@+id/one"
+        android:title="Brains"/>
+
+    <item
+        android:id="@+id/two"
+        android:title="Breast Cancer"/>
+
+    <item
+        android:id="@+id/three"
+        android:title="Lung"/>
+
+    <item
+        android:id="@+id/four"
+        android:title="Cervix"/>
+
+    <item
+        android:id="@+id/five"
+        android:title="Colon and Rectum"/>
+
+    <item
+        android:id="@+id/six"
+        android:title="Esophagus"/>
+
+    <item
+        android:id="@+id/seven"
+        android:title="Kidney and Renal Pelvis"/>
+
+    <item
+        android:id="@+id/eight"
+        android:title="Leukemia"/>
+
+    <item
+        android:id="@+id/nine"
+        android:title="Pancreas"/>
+
+</menu>  
