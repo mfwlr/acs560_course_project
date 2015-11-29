@@ -1,5 +1,4 @@
 <?php
-
 class User {
 
     public $UserName;
@@ -238,6 +237,178 @@ class User {
         header('Content-type: application/json');
         echo json_encode($resultArr);
         exit();
+
+    }
+
+    public function AddBookmark($countyCode,$stateCode,$diseaseCode){
+
+
+        $sql="SELECT COUNT(id) AS userCount,id FROM users WHERE username= '".mysqli_real_escape_string($this->_db,$this->UserName)."'";
+
+
+        if (!$result = $this->_db->query($sql)) {
+
+            $this->_dbErrorMsg = "sql error: " . $this->_db->error;
+            $this->_dbErrorStatus=1;
+            $this->_status=0;
+
+        }
+
+        $row = $result->fetch_assoc();
+
+        if($row['userCount'] !=1){
+
+            $this->_dbErrorMsg="user not found";
+            $this->_dbErrorStatus=1;
+            $this->_status=0;
+            $resultArr = array("status"=>$this->_status,"error_status"=>$this->_dbErrorStatus,"error_message"=>$this->_dbErrorMsg);
+
+            header('Content-type: application/json');
+            echo json_encode($resultArr);
+            exit();
+
+        }
+
+
+        $insert = "INSERT INTO bookmarks(user_id,county_name,state_code,cancer_type,date_created)VALUES('".mysqli_real_escape_string($this->_db,$row['id'])."',
+                                                                                            '".mysqli_real_escape_string($this->_db,$countyCode)."',
+                                                                                            '".mysqli_real_escape_string($this->_db,$stateCode)."',
+                                                                                            '".mysqli_real_escape_string($this->_db,$diseaseCode)."',
+                                                                                            NOW())";
+
+        if (!$result = $this->_db->query($insert)) {
+
+            $this->_dbErrorMsg = "new bookmark  insert failed: " . $this->_db->error;
+            $this->_dbErrorStatus=1;
+            $this->_status=0;
+        }
+
+        $this->_status=1;
+
+        $resultArr = array("status"=>$this->_status,"error_status"=>$this->_dbErrorStatus,"error_message"=>$this->_dbErrorMsg);
+
+        header('Content-type: application/json');
+        echo json_encode($resultArr);
+        exit();
+
+    }
+
+    public function GetBookmarks(){
+
+        $sql="SELECT COUNT(id) AS userCount,id FROM users WHERE username= '".mysqli_real_escape_string($this->_db,$this->UserName)."'";
+
+
+        if (!$result = $this->_db->query($sql)) {
+
+            $this->_dbErrorMsg = "sql error: " . $this->_db->error;
+            $this->_dbErrorStatus=1;
+            $this->_status=0;
+
+        }
+
+        $row = $result->fetch_assoc();
+
+        if($row['userCount'] !=1){
+
+            $this->_dbErrorMsg="user not found";
+            $this->_dbErrorStatus=1;
+            $this->_status=0;
+            $resultArr = array("status"=>$this->_status,"error_status"=>$this->_dbErrorStatus,"error_message"=>$this->_dbErrorMsg);
+
+            header('Content-type: application/json');
+            echo json_encode($resultArr);
+            exit();
+
+        }
+
+
+       $select = "SELECT * FROM bookmarks WHERE user_id='".mysqli_real_escape_string($this->_db,$row['id'])."' GROUP BY county_name,state_code,cancer_type ORDER BY date_created DESC";
+
+        if (!$result = $this->_db->query($select)) {
+
+            $this->_dbErrorMsg = "bookmarks  fetch failed: " . $this->_db->error;
+            $this->_dbErrorStatus=1;
+            $this->_status=0;
+        }
+
+        if($result->num_rows ==0){
+
+            $this->_status=0;
+            $this->_dbErrorMsg = "no bookmarks found";
+            $this->_dbErrorStatus=1;
+            $resultArr = array("status"=>$this->_status,"error_status"=>$this->_dbErrorStatus,"error_message"=>$this->_dbErrorMsg);
+            header('Content-type: application/json');
+            echo json_encode($resultArr);
+            exit();
+
+        }
+
+        $this->_status=1;
+
+        $ctr=0;
+        while ($row = $result->fetch_array()) {
+
+                $resultsArr[$ctr] = array("user_id"=>$row["user_id"],
+                "county_name"=>$row["county_name"],
+                "state_code"=>$row["state_code"],
+                "cancer_type"=>$row["cancer_type"],
+                "date_created"=>$row["date_created"]);
+
+            $ctr++;
+        }
+
+        header('Content-type: application/json');
+        echo json_encode($resultsArr);
+        exit();
+
+    }
+
+    public function DeleteBookmark($countyCode,$stateCode,$diseaseCode){
+
+        $sql="SELECT COUNT(id) AS userCount,id FROM users WHERE username= '".mysqli_real_escape_string($this->_db,$this->UserName)."' AND password= '".mysqli_real_escape_string($this->_db,$this->Password)."'";
+
+        if (!$result = $this->_db->query($sql)) {
+
+            $this->_dbErrorMsg = "sql error: " . $this->_db->error;
+            $this->_dbErrorStatus = 1;
+        }
+
+        $row = $result->fetch_assoc();
+
+
+        if($row['userCount']==1){
+
+            $sql2 = "DELETE FROM bookmarks WHERE user_id=".mysqli_real_escape_string($this->_db,$row['id'])." AND county_name='".mysqli_real_escape_string($this->_db,$countyCode)."' AND state_code='".$stateCode."' AND cancer_type='".$diseaseCode."'";
+
+            if ($this->_db->query($sql2) === TRUE) {
+
+                $this->_status = 1;
+                $this->_dbErrorMsg="";
+                $this->_dbErrorStatus = 0;
+
+
+            } else {
+
+                $this->_status=0;
+                $this->_dbErrorMsg= "Error deleting bookmark: " . $this->_db->error;
+                $this->_dbErrorStatus=1;
+
+            }
+
+            $resultArr = array("status"=>$this->_status,"error_status"=>$this->_dbErrorStatus,"error_message"=>$this->_dbErrorMsg);
+            header('Content-type: application/json');
+            echo json_encode($resultArr);
+            exit();
+        }
+        $this->_status = 0;
+        $this->_dbErrorStatus = 1;
+        $this->_dbErrorMsg="user not found";
+
+        $resultArr = array("status"=>$this->_status,"error_status"=>$this->_dbErrorStatus,"error_message"=>$this->_dbErrorMsg);
+        header('Content-type: application/json');
+        echo json_encode($resultArr);
+        exit();
+
 
     }
 

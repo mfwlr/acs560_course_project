@@ -7,7 +7,54 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f
 
 
-#http://ws.instrumentsafe.com/ws.php?s=18&t=40&c=allen
+# execute stats query ####################################################################################################
+# http://ws.instrumentsafe.com/ws.php?s=18&t=40&c=allen
 RewriteRule ^r/?$ ws.php [L,QSA,NC]
-RewriteRule ^r/(.*)/(.*)/?$ ws.php?s=$1&t=$2 [L,QSA,NC]
-RewriteRule ^r/(.*)/(.*)/(.*)/?$ ws.php?s=$1&t=$2&c=$3 [L,QSA,NC]
+RewriteRule ^r/([0-9]+)/([0-9]+)/?$ ws.php?s=$1&t=$2 [L,QSA,NC]
+RewriteRule ^r/([0-9]+)/([0-9]+)/(.*)/?$ ws.php?s=$1&t=$2&c=$3 [L,QSA,NC]
+
+
+# login user ####################################################################################################
+# USAGE
+# http://ws.instrumentsafe.com/login.php?u=castonzo@gmail.com&p=foo&d=x1234rtn
+# http://ws.instrumentsafe.com/l/castonzo@gmail/foo
+# http://ws.instrumentsafe.com/l/astonzo@gmail/foo/XFDS122990 ### device id as last arg. not really used
+
+RewriteRule ^l/?$ login.php [L,QSA,NC]
+RewriteRule ^l/(.+)/(.+)/?$ login.php?u=$1&p=$2 [L,QSA,NC]
+RewriteRule ^l/(.+)/(.+)/(.+)/?$ login.php?u=$1&p=$2&d=$3 [L,QSA,NC]
+
+
+# add,update, delete user ####################################################################################################
+
+# USAGE
+# http://ws.instrumentsafe.com/user.php?o=add&u=castonzo@gmail.com&p=foo
+# http://ws.instrumentsafe.com/u/add/wcastonzo20@comcast.net/foo
+
+# http://ws.instrumentsafe.com/user.php?o=update&u=castonzo@gmail.com&p=foo
+# http://ws.instrumentsafe.com/u/update/wcastonzo3@comcast.net/barrrre
+
+# http://ws.instrumentsafe.com/user.php?o=delete&u=castonzo@gmail.com&p=foo
+# http://ws.instrumentsafe.com/u/delete/wcastonzo2@comcast.net/bar
+
+RewriteRule ^u/?$ user.php [L,QSA,NC]
+RewriteRule ^u/(.+)/(.+)/(.+)/?$ user.php?o=$1&u=$2&p=$3 [L,QSA,NC]
+
+
+# get bookmarks ################################################################################################
+# USAGE
+# http://ws.instrumentsafe.com/gb/get_bookmarks/wcastonzo5@comcast.net/foo
+RewriteRule ^gb/(.+)/(.+)/(.+)/?$ user.php?o=$1&u=$2&p=$3 [L,QSA,NC] 
+
+# add bookmark ##################################################################################################
+# USAGE
+# http://ws.instrumentsafe.com/ab/add_bookmark/wcastonzo5@comcast.net/foo/allen/18/42
+RewriteRule ^ab/(.+)/(.+)/(.+)/(.+)/(.+)/(.+)/?$ user.php?o=$1&u=$2&p=$3&c=$4&s=$5&d=$6 [L,QSA,NC]
+
+# delete bookmark ##################################################################################################
+# USAGE
+# http://ws.instrumentsafe.com/db/delete_bookmark/wcastonzo5@comcast.net/foo/allen/18/42
+RewriteRule ^db/(.+)/(.+)/(.+)/(.+)/(.+)/(.+)/?$ user.php?o=$1&u=$2&p=$3&c=$4&s=$5&d=$6 [L,QSA,NC]
+
+
+
