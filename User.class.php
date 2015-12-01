@@ -1,19 +1,24 @@
 <?php
+
+require ("/home/isafeuser/ws.instrumentsafe.com/config.php");
+
 class User {
 
-    public $UserName;
-    public $Password;
+    public  $UserName;
+    public  $Password;
     private $_db;
     private $_status;
     private $_dbErrorMsg;
     private $_dbErrorStatus;
+
+    
 
 
     function User($username,$password) {
 
         $this->UserName = str_replace("/","",trim($username));
         $this->Password = trim($password);
-
+       
         if(!$this->ValidateUserNameAndPassword()){
 
             $resultArr = array("status"=>0,"error_status"=>1,"error_message"=>"invalid username or password");
@@ -240,9 +245,23 @@ class User {
 
     }
 
-    public function AddBookmark($countyCode,$stateCode,$diseaseCode){
+    public function AddBookmark($countyCode,$stateCode,$diseaseCode,$lat,$lng){
 
 
+        if(!$this->ValidateLatitudeLongitude(trim($lat)) || !$this->ValidateLatitudeLongitude(trim($lng))){
+        	
+        	$this->_dbErrorMsg="invalid lat or lng";
+            $this->_dbErrorStatus=1;
+            $this->_status=0;
+            $resultArr = array("status"=>$this->_status,"error_status"=>$this->_dbErrorStatus,"error_message"=>$this->_dbErrorMsg);
+            
+            header('Content-type: application/json');
+            echo json_encode($resultArr);
+            exit();
+        
+        }
+        
+        
         $sql="SELECT COUNT(id) AS userCount,id FROM users WHERE username= '".mysqli_real_escape_string($this->_db,$this->UserName)."'";
 
 
@@ -270,10 +289,12 @@ class User {
         }
 
 
-        $insert = "INSERT INTO bookmarks(user_id,county_name,state_code,cancer_type,date_created)VALUES('".mysqli_real_escape_string($this->_db,$row['id'])."',
-                                                                                            '".mysqli_real_escape_string($this->_db,$countyCode)."',
-                                                                                            '".mysqli_real_escape_string($this->_db,$stateCode)."',
-                                                                                            '".mysqli_real_escape_string($this->_db,$diseaseCode)."',
+        $insert = "INSERT INTO bookmarks(user_id,county_name,state_code,cancer_type,latitude,longitude,date_created)VALUES('".mysqli_real_escape_string($this->_db,$row['id'])."',
+                                                                                            '".mysqli_real_escape_string($this->_db,trim($countyCode))."',
+                                                                                            '".mysqli_real_escape_string($this->_db,trim($stateCode))."',
+                                                                                            '".mysqli_real_escape_string($this->_db,trim($diseaseCode))."',
+                                                                                            '".mysqli_real_escape_string($this->_db,trim($lat))."',
+                                                                                            '".mysqli_real_escape_string($this->_db,trim($lng))."',
                                                                                             NOW())";
 
         if (!$result = $this->_db->query($insert)) {
@@ -322,7 +343,9 @@ class User {
         }
 
 
-       $select = "SELECT * FROM bookmarks WHERE user_id='".mysqli_real_escape_string($this->_db,$row['id'])."' GROUP BY county_name,state_code,cancer_type ORDER BY date_created DESC";
+       $select = "SELECT * FROM bookmarks WHERE user_id='".mysqli_real_escape_string($this->_db,$row['id'])."' AND latitude <> 0.00000000 AND longitude <>0.00000000 GROUP BY county_name,state_code,cancer_type ORDER BY date_created DESC";
+       
+   
 
         if (!$result = $this->_db->query($select)) {
 
@@ -352,6 +375,8 @@ class User {
                 "county_name"=>$row["county_name"],
                 "state_code"=>$row["state_code"],
                 "cancer_type"=>$row["cancer_type"],
+                "latitude"=>$row["latitude"],
+                "longitude"=>$row["longitude"],
                 "date_created"=>$row["date_created"]);
 
             $ctr++;
@@ -432,5 +457,10 @@ class User {
     private function ValidateUserNameAndPassword(){
 
         return $this->UserName !="" && $this->Password !="";
+    }
+    
+        private function ValidateLatitudeLongitude($s){
+
+        	return preg_match('/^\-?([\d]+)\.([\d]+)/',$s);
     }
 }

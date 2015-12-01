@@ -2,13 +2,15 @@
 require ("/home/isafeuser/ws.instrumentsafe.com/config.php");
 require("/home/isafeuser/ws.instrumentsafe.com/public/classes/User.php");
 
-
+//user.php?o=$1&u=$2&p=$3&c=$4&s=$5&d=$6
 $op = trim($_REQUEST['o']);
 $username = trim($_REQUEST['u']);
 $password = trim($_REQUEST['p']);
 $county = trim($_REQUEST['c']);
 $state_code = trim($_REQUEST['s']);
 $disease_code = trim($_REQUEST['d']);
+$lat = trim($_REQUEST['lat']);
+$lng = trim($_REQUEST['lng']);
 
 validateInputData($username,$password,$op);
 
@@ -21,7 +23,8 @@ if($op =="add"){
 
 }else if($op=="add_bookmark"){
 	
-	$user->AddBookmark($county,$state_code,$disease_code);
+
+	$user->AddBookmark($county,$state_code,$disease_code,$lat,$lng);
 
 }else if($op=="get_bookmarks"){
 	
@@ -49,12 +52,6 @@ else if($op=="update"){
 	echo json_encode($errorResultArr);
 	exit();
 }
-
-
-
-
-
-
 
 
 
