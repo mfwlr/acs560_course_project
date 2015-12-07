@@ -19,6 +19,7 @@ import org.apache.http.client.ClientProtocolException;
 import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.List;
+import java.util.ArrayList;
 import java.io.IOException;
 
 import android.location.Geocoder;
@@ -28,6 +29,7 @@ import android.content.Context;
 
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class RHMDataCenter {
 
@@ -155,13 +157,18 @@ public class RHMDataCenter {
         return httpToJson(httpGet);
     }
 
-    public static boolean determineFav(String countyName, String email, String pwd){
-        //http://ws.instrumentsafe.com/gb/get_bookmarks/wcastonzo5@comcast.net/foo
+    private static JSONArray getBooks(String st){
         enableStrictMode();
 
-        HttpGet httpGet = new HttpGet("http://ws.instrumentsafe.com/gb/get_bookmarks/"+email+"/"+pwd);
+        HttpGet httpGet = new HttpGet(st);
 
-        JSONArray res = httpToJarray(httpGet);
+        return httpToJarray(httpGet);
+    }
+
+    public static boolean determineFav(String countyName, String email, String pwd){
+        //http://ws.instrumentsafe.com/gb/get_bookmarks/wcastonzo5@comcast.net/foo
+
+        JSONArray res = getBooks("http://ws.instrumentsafe.com/gb/get_bookmarks/"+email+"/"+pwd);
         try{
             for(int i = 0; i < res.length(); i++){
                 if(res.getJSONObject(i).getString("county_name").toLowerCase().equals(countyName.toLowerCase())){
@@ -346,5 +353,48 @@ public class RHMDataCenter {
 
         httpToJson(httpGet);
 
+    }
+
+    public static ArrayList<RHMFavModel> fetchFavorites(String email, String pwd){
+
+        ArrayList<RHMFavModel> list = new ArrayList<RHMFavModel>();
+
+        JSONArray res = getBooks("http://ws.instrumentsafe.com/gb/get_bookmarks/"+email+"/"+pwd);
+
+        for(int i = 0; i < res.length(); i++){
+            try {
+                JSONObject r = res.getJSONObject(i);
+                int cType = r.getInt("cancer_type");
+                String cTN = null;
+                for(Map.Entry e:cancerLookUp.entrySet()){
+                    if(cType == (e.getValue())){
+                        cTN = (String) e.getKey();
+                        break;
+                    }
+                }
+
+                int sType = r.getInt("state_code");
+                String sTT = null;
+                for(Map.Entry e:stateLookUp.entrySet()){
+                    if(sType == (e.getValue())){
+                        sTT = (String) e.getKey();
+                        break;
+                    }
+                }
+
+                String county = r.getString("county_name");
+                double lat = r.getDouble("latitude");
+                double lon = r.getDouble("longitude");
+
+                RHMFavModel mod = new RHMFavModel();
+                mod.setCancerType(cTN); mod.setStateName(sTT);
+                mod.setCountyName(county);
+                mod.setLat(lat); mod.setLon(lon);
+                list.add(mod);
+            }catch(Exception e){
+                System.out.println("Fav list failed, internal error, ignore");
+            }
+        }
+        return list;
     }
 }

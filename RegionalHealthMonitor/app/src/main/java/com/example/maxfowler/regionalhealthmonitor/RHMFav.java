@@ -5,22 +5,34 @@ import android.app.Activity;
 import android.widget.ExpandableListView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import java.util.ArrayList;
 /**
  * Created by maxfowler on 11/5/15.
  */
 public class RHMFav extends Activity{
 
+    private ListView lv;
+    private RHMFavAdapter rfa;
+
+    private RHMFav ref = null;
+    private ArrayList<RHMFavModel> models = new ArrayList<RHMFavModel>();
+
     public void onCreate(Bundle instanceState){
         super.onCreate(instanceState);
         setContentView(R.layout.rhmfav);
 
-        String[] placehold = {"Sample 1", "My favorite", "Fake data", "Whee", "Not whee", "Purple"};
+        ref = this;
 
-       // RHMFavModel fm = new RHMFavModel(getBaseContext(), placehold);
+        fetchFavs();
 
-        //Change to Expandable list when not using canned data
         ListView lv =  (ListView) findViewById(R.id.favList);
 
-        lv.setAdapter(new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1, placehold));
+        rfa = new RHMFavAdapter(ref, models);
+        lv.setAdapter(rfa);
+    }
+
+    public void fetchFavs(){
+        RHMUser u = ((RHMAppData)this.getApplication()).getUser();
+        models = RHMDataCenter.fetchFavorites(u.getName(), u.getPass());
     }
 }
