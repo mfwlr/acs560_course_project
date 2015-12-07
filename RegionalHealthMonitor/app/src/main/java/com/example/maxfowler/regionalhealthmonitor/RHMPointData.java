@@ -12,8 +12,10 @@ public class RHMPointData {
     private double incRate;
     private String countyName;
     private String cancerName;
+    private double lat;
+    private double lon;
 
-    public RHMPointData(double incidentRate, int starRank, String countyName, String cancerName){
+    public RHMPointData(double incidentRate, int starRank, String countyName, String cancerName, double lat, double lon){
         incRate = incidentRate;
         this.starRank = starRank;
         this.countyName = countyName;
@@ -28,6 +30,9 @@ public class RHMPointData {
         } else{
             severity = "Negligible";
         }
+
+        this.lat = lat;
+        this.lon = lon;
     }
 
     public String buildTitle(){
@@ -51,5 +56,12 @@ public class RHMPointData {
         else{
             return BitmapDescriptorFactory.HUE_GREEN;
         }
+    }
+
+    public double getLatitude(){
+        return lat;
+    }
+    public double getLongitude(){
+        return lon;
     }
 }

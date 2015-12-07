@@ -16,6 +16,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
 
+import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.List;
 import java.io.IOException;
@@ -31,6 +32,10 @@ public class RHMDataCenter {
 
     public static HashMap<String, Integer> stateLookUp = null;
 
+    /**
+     * A convenient, although awful, way to initialize a list of state to int code lookups.
+     * Forgive the poor design
+     */
     public static void initStateLookUp(){
         HashMap<String, Integer> temp = new HashMap();
         temp.put("Alabama", 1);
@@ -48,13 +53,64 @@ public class RHMDataCenter {
         temp.put("Idaho", 16);
         temp.put("Illinois", 17);
         temp.put("Indiana", 18);
-        temp.put("Ohio", 39);
+        temp.put("Iowa", 19);
+        temp.put("Kansas", 20);
+        temp.put("Kentucky", 21);
+        temp.put("Louisiana", 22);
+        temp.put("Maine", 23);
+        temp.put("Maryland", 24);
+        temp.put("Massachusetts",25);
         temp.put("Michigan", 26);
+        temp.put("Minnesota",27);
+        temp.put("Mississippi",28);
+        temp.put("Missouri", 29);
+        temp.put("Montana",30);
+        temp.put("Nebraska", 31);
+        temp.put("Nevada", 32);
+        temp.put("New Hampshire", 33);
+        temp.put("New Jersey", 34);
+        temp.put("New Mexico", 35);
+        temp.put("New York", 36);
+        temp.put("North Carolina", 37);
+        temp.put("North Dakota", 38);
+        temp.put("Ohio", 39);
+        temp.put("Oklahoma", 40);
+        temp.put("Oregon", 41);
+        temp.put("Pennsylvania",42);
+        temp.put("Rhode Island", 44);
+        temp.put("South Carolina", 45);
+        temp.put("South Dakota", 46);
+        temp.put("Tennessee", 47);
+        temp.put("Texas", 48);
+        temp.put("Utah", 49);
+        temp.put("Vermont", 50);
+        temp.put("Virginia", 51);
+        temp.put("Washington", 53);
+        temp.put("West Virginia", 54);
+        temp.put("Wisconsin", 55);
+        temp.put("Wyoming", 56);
+
+
 
         stateLookUp = temp;
 
     }
 
+    public static boolean loginResults(String email, String pwd){
+        //http://ws.instrumentsafe.com/l/castonzo@gmail.com/foo
+        enableStrictMode();
+        HttpGet httpGet = new HttpGet("http://ws.instrumentsafe.com/l/"+email+"/"+pwd);
+        System.out.println("http://ws.instrumentsafe.com/l/"+email+"/"+pwd);
+        JSONObject res = httpToJson(httpGet);
+        try {
+            if (res.getInt("status") != 1) {
+                return false;
+            }
+        }catch(JSONException e){
+            return false;
+        }
+        return true;
+    }
 
     public static JSONObject getCancerData(String cn, int ct, int sc){
         enableStrictMode();
@@ -62,6 +118,7 @@ public class RHMDataCenter {
         //http://ws.instrumentsafe.com/r/18/40/allen
 
         HttpGet httpGet = new HttpGet("http://ws.instrumentsafe.com/r/"+sc+"/"+ct +"/"+cn);
+        System.out.println("http://ws.instrumentsafe.com/r/"+sc+"/"+ct +"/"+cn);
 
         return httpToJson(httpGet);
     }
@@ -104,18 +161,32 @@ public class RHMDataCenter {
 
     public static String getCounty(double lat, double lng){
         JSONObject jsn = getLocationInfo(lat, lng);
+        int selection = -1;
+        String types = null;
 
         try{
             JSONArray res = jsn.getJSONArray("results");
             JSONObject r = res.getJSONObject(0);
             JSONArray typesArray = r.getJSONArray("address_components");
-            JSONObject r2 = typesArray.getJSONObject(5);
-            String types = r2.getString("long_name");
-            String regex = "\\s*\\bCounty\\b\\s*";
-            types = types.replaceAll(regex,"");
-            return types;
+            for(int i = 0; i < typesArray.length(); i++){
+                JSONObject intermed = typesArray.getJSONObject(i);
+                JSONArray hold = intermed.getJSONArray("types");
+                if(hold.get(0).equals("administrative_area_level_2")){
+                    selection = i;
+                    break;
+                }
+
+            }
+
+            if(selection != -1) {
+                JSONObject r2 = typesArray.getJSONObject(selection);
+                types = r2.getString("long_name");
+                String regex = "\\s*\\bCounty\\b\\s*";
+                types = types.replaceAll(regex, "");
+            }
+        return types;
         } catch(JSONException e){
-           System.out.println("bAD MOVE!!");
+           System.out.println("JSON could not be parsed");
         }
 
         return null;
@@ -145,7 +216,7 @@ public class RHMDataCenter {
         return stateName;
     }
 
-    public static RHMPointData makeRPD(String countyName, String cancerName,  int cancerType, String stateName){
+    public static RHMPointData makeRPD(String countyName, String cancerName,  int cancerType, String stateName, double lat, double lon){
 
         int stateCode = (Integer) stateLookUp.get(stateName);
 
@@ -156,11 +227,38 @@ public class RHMDataCenter {
         try {
             String incidentRate = (String) res.getString("user_incidence_rate");
             Integer starRank = (Integer) res.getInt("state_star_ranking");
-            System.out.println("Yeees: " + incidentRate + "   " + starRank);
-            return new RHMPointData(Double.parseDouble(incidentRate), starRank, countyName, cancerName);
+            return new RHMPointData(Double.parseDouble(incidentRate), starRank, countyName, cancerName, lat, lon);
         }catch(JSONException e){
             System.out.println("Bad JSON - ignore and move on with your life");
         }
+        catch(NumberFormatException e2){
+            System.out.println("Failed to get incidence rate");
+        }
         return null;
+    }
+
+    public static void addNewUser(String em, String pwd){
+        //http://ws.instrumentsafe.com/u/add/wcastonzo2@comcast.net/foo
+        enableStrictMode();
+        HttpGet httpGet = new HttpGet("http://ws.instrumentsafe.com/u/add/"+em+"/"+pwd);
+        System.out.println("http://ws.instrumentsafe.com/u/add/"+em+"/"+pwd);
+        simpleExecute(httpGet);
+    }
+
+    public static void editExistingUser(String em, String pwd){
+        enableStrictMode();
+        HttpGet httpGet = new HttpGet("http://ws.instrumentsafe.com/u/update/"+em+"/"+pwd);
+        System.out.println("http://ws.instrumentsafe.com/u/update/"+em+"/"+pwd);
+        simpleExecute(httpGet);
+    }
+
+    private static void simpleExecute(HttpGet httpGet){
+        HttpClient hc = new DefaultHttpClient();
+        try{
+            hc.execute(httpGet);
+        }catch(Exception e){
+            System.out.println("Internal error, ignore");
+        }
+
     }
 }

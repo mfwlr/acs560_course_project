@@ -5,18 +5,57 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+    <LinearLayout android:layout_width="fill_parent"
+        android:orientation="horizontal"
+        android:id="@+id/mapButtonHolder"
+        android:layout_gravity="bottom"
+        android:background="@color/black"
+        android:layout_height="wrap_content">
+        <Button android:layout_weight="1"
+            android:text="Set Cancer"
+            android:height="14dp"
+            android:textSize="15sp"
+            android:textColor="@color/textC"
+            android:background="@color/grey"
+            android:layout_width="wrap_content"
+            android:layout_height="26dp"
+            android:id="@+id/CancerToggle"
+            android:onClick="showPopup"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp">
+        </Button>
+        <Button android:layout_weight="1"
+            android:text="Marker: A"
+            android:height="14dp"
+            android:textSize="15sp"
+            android:textColor="@color/textC"
+            android:background="@color/grey"
+            android:layout_width="wrap_content"
+            android:layout_height="26dp"
+            android:id="@+id/MarkerToggle"
+            android:onClick="changeMarker"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="5dp">
+        </Button>
+        <CheckBox android:layout_weight="1"
+            android:text="Use Location"
+            android:height="14dp"
+            android:textSize="15sp"
+            android:textColor="@color/textC"
+            android:background="@color/grey"
+            android:layout_width="wrap_content"
+            android:layout_height="26dp"
+            android:id="@+id/LocationToggle"
+            android:onClick="toggleLocation"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="5dp"
+            android:checked="true"
+            android:clickable="true">
+        </CheckBox>
+    </LinearLayout>
 
-    <Button
-        android:id="@+id/button1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginLeft="62dp"
-        android:layout_marginTop="10dp"
-        android:text="Set Cancer"
-        android:onClick="showPopup"/>
 
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
