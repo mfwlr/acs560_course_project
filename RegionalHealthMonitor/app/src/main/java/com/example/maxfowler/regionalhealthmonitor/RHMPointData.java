@@ -12,14 +12,17 @@ public class RHMPointData {
     private double incRate;
     private String countyName;
     private String cancerName;
+    private String stateName;
     private double lat;
     private double lon;
+    private boolean isFav;
 
-    public RHMPointData(double incidentRate, int starRank, String countyName, String cancerName, double lat, double lon){
+    public RHMPointData(double incidentRate, int starRank, String countyName, String stateName, String cancerName, double lat, double lon){
         incRate = incidentRate;
         this.starRank = starRank;
         this.countyName = countyName;
         this.cancerName = cancerName;
+        this.stateName = stateName;
 
         if(starRank == 1){
             severity = "Most severe";
@@ -33,6 +36,11 @@ public class RHMPointData {
 
         this.lat = lat;
         this.lon = lon;
+
+    }
+
+    public void determineFavorite(String email, String pwd){
+        isFav = RHMDataCenter.determineFav(countyName, email, pwd);
     }
 
     public String buildTitle(){
@@ -40,7 +48,11 @@ public class RHMPointData {
     }
 
     public String buildSnippet(){
-        return cancerName + ": " + incRate +"\nSeverity: " + severity;
+        String ret = cancerName + ": " + incRate +"\nSeverity: " + severity +"\tFavorite: ";
+        if(isFav){
+            return ret + "Y";
+        }
+        return ret + "N";
     }
 
     public float severityHue(){
@@ -55,6 +67,13 @@ public class RHMPointData {
         }
         else{
             return BitmapDescriptorFactory.HUE_GREEN;
+        }
+    }
+
+    public void addFavorite(String name, String pass){
+        if(!isFav) {
+            RHMDataCenter.addFavorite(name, pass, cancerName, lat, lon, countyName, stateName);
+            isFav = true;
         }
     }
 

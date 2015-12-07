@@ -14,12 +14,14 @@ import android.graphics.Color;
 
 import android.content.Context;
 
-public class RHMInfoPane implements GoogleMap.InfoWindowAdapter {
+public class RHMInfoPane implements GoogleMap.InfoWindowAdapter{
 
     private Context mContext;
 
-    RHMInfoPane(Context mContext){
+
+    public RHMInfoPane(Context mContext){
         this.mContext = mContext;
+
     }
 
 
@@ -47,7 +49,10 @@ public class RHMInfoPane implements GoogleMap.InfoWindowAdapter {
             info.addView(title);
             info.addView(snippet);
 
+
+
             return info;
         }
+
 
 }

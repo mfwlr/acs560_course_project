@@ -14,6 +14,14 @@ public class RHMUser implements Parcelable {
         this.pass = pass;
     }
 
+    public String getName(){
+        return name;
+    }
+
+    public String getPass(){
+        return pass;
+    }
+
     public int describeContents(){
         return 0;
     }

@@ -7,13 +7,9 @@ import android.widget.Button;
 import android.view.View.OnClickListener;
 import android.content.Intent;
 import android.widget.EditText;
-import android.widget.ProgressBar;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.view.LayoutInflater;
-
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 
 
 public class RHMLogin extends Activity{
@@ -26,7 +22,7 @@ public class RHMLogin extends Activity{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        RHMDataCenter.initStateLookUp();
+        RHMDataCenter.initLookUpTables();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rhmlogin);
 

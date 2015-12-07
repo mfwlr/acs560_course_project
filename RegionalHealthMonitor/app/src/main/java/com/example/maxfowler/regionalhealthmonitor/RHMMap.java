@@ -35,12 +35,15 @@ import android.content.Intent;
 
 
 
-public class RHMMap extends Activity implements OnMapReadyCallback, LocationListener, GoogleMap.OnMapClickListener, PopupMenu.OnMenuItemClickListener{
+public class RHMMap extends Activity implements OnMapReadyCallback, LocationListener,
+        GoogleMap.OnMapClickListener, PopupMenu.OnMenuItemClickListener, GoogleMap.OnInfoWindowClickListener{
 
 
     private boolean usePosition;
     private int curMark;
     private LatLng pos;
+
+    private static int LL_TOLERANCE = 10;
 
     private int cancerType;
     private String cancerName;
@@ -62,7 +65,7 @@ public class RHMMap extends Activity implements OnMapReadyCallback, LocationList
         super.onCreate(instanceState);
         setContentView(R.layout.rhmmap);
 
-        System.out.println("Current user " + ((RHMAppData)this.getApplication()).getUser());
+        System.out.println("Current user " + ((RHMAppData) this.getApplication()).getUser());
 
 
         usePosition = true;
@@ -129,8 +132,10 @@ public class RHMMap extends Activity implements OnMapReadyCallback, LocationList
 
 
         //View file for pin
+
         RHMInfoPane rip = new RHMInfoPane(getBaseContext());
         mMap.setInfoWindowAdapter(rip);
+        mMap.setOnInfoWindowClickListener(this);
 
 
         double lat = 0;
@@ -146,7 +151,8 @@ public class RHMMap extends Activity implements OnMapReadyCallback, LocationList
             lon = -85;
         }
 
-        if(lat > curLat + 10 || lat < curLat - 10 || lon > curLon+10 || lon < curLon-10) {
+        if(lat > curLat + LL_TOLERANCE || lat < curLat - LL_TOLERANCE ||
+                lon > curLon+LL_TOLERANCE || lon < curLon-LL_TOLERANCE) {
 
             placeMarker(lat, lon);
             curLat = lat;
@@ -183,17 +189,28 @@ public class RHMMap extends Activity implements OnMapReadyCallback, LocationList
 
         LatLng pos = new LatLng(lat, lon);
 
+        RHMUser u = ((RHMAppData)this.getApplication()).getUser();
+
+        RHMPointData temporary = RHMDataCenter.makeRPD(countyName, cancerName, cancerType, stateName, lat, lon);
+
+        if(temporary == null){
+            new AlertDialog.Builder(this).setTitle("Error").setMessage("Unsupported county name due to data format errors - sorry!").show();
+            return;
+        }
+
         if(curMark == 0){
             if(curMarkerA !=  null) {
                 curMarkerA.remove();
             }
-            currentRPDA = RHMDataCenter.makeRPD(countyName, cancerName, cancerType, stateName, lat, lon);
+            currentRPDA = temporary;
+            currentRPDA.determineFavorite(u.getName(), u.getPass());
             curMarkerA = mMap.addMarker(new MarkerOptions().position(pos).title(currentRPDA.buildTitle()).snippet(currentRPDA.buildSnippet()).icon(BitmapDescriptorFactory.defaultMarker(currentRPDA.severityHue())));
         }else{
             if(curMarkerB !=  null) {
                 curMarkerB.remove();
             }
-            currentRPDB = RHMDataCenter.makeRPD(countyName, cancerName, cancerType, stateName, lat, lon);
+            currentRPDB = temporary;
+            currentRPDB.determineFavorite(u.getName(), u.getPass());
             curMarkerB = mMap.addMarker(new MarkerOptions().position(pos).title(currentRPDB.buildTitle()).snippet(currentRPDB.buildSnippet()).icon(BitmapDescriptorFactory.defaultMarker(currentRPDB.severityHue())));
         }
         if(curMark == 0 && usePosition) {
@@ -265,44 +282,35 @@ public class RHMMap extends Activity implements OnMapReadyCallback, LocationList
         switch (item.getItemId()) {
             case R.id.one:
                 cancerName = "Brain";
-                cancerType = 76;
                 break;
             case R.id.two:
                 cancerName = "Breast Cancer";
-                cancerType = 55;
                 break;
             case R.id.three:
                 cancerName = "Lung";
-                cancerType = 47;
                 break;
             case R.id.four:
                 cancerName = "Cervix";
-                cancerType = 57;
                 break;
             case R.id.five:
                 cancerName = "Colon and Rectum";
-                cancerType = 20;
                 break;
             case R.id.six:
                 cancerName = "Esophagus";
-                cancerType = 17;
                 break;
             case R.id.seven:
                 cancerName = "Kidney and Pelvis";
-                cancerType = 72;
-                return true;
+               break;
             case R.id.eight:
                 cancerName = "Leukemia";
-                cancerType = 90;
                 break;
-
             case R.id.nine:
                 cancerName = "Pancreas";
-                cancerType = 40;
                 break;
             default:
                 return false;
         }
+        cancerType = RHMDataCenter.cancerLookUp.get(cancerName);
         int tcm = curMark;
         curMark = 0;
         if(currentRPDA != null) {
@@ -337,6 +345,20 @@ public class RHMMap extends Activity implements OnMapReadyCallback, LocationList
         usePosition = cb.isChecked();
     }
 
+    public void onInfoWindowClick(Marker marker){
+        RHMUser u = ((RHMAppData)this.getApplication()).getUser();
+       if(curMark == 0){
+           if(currentRPDA != null){
+               currentRPDA.addFavorite(u.getName(), u.getPass());
+           }
+       }else{
+           if(currentRPDB != null){
+               currentRPDB.addFavorite(u.getName(), u.getPass());
+           }
+
+       }
+
+    }
 
 }
 
