@@ -127,6 +127,27 @@ public class RHMMap extends Activity implements OnMapReadyCallback, LocationList
 
     }
 
+    public void checkFav(){
+        RHMFavModel r = ((RHMAppData)this.getApplication()).fetchInfo();
+        int mark = ((RHMAppData)this.getApplication()).fetchMark();
+        if(mark == 0){
+            curMark = 0;
+            usePosition = false;
+            CheckBox cb = (CheckBox) this.findViewById(R.id.LocationToggle);
+            cb.setChecked(false);
+            cancerName = r.getCancerType();
+            cancerType = RHMDataCenter.cancerLookUp.get(cancerName);
+            placeMarker(r.getLat(),r.getLon());
+        }else if(mark == 1){
+            curMark = 1;
+            CheckBox cb = (CheckBox) this.findViewById(R.id.LocationToggle);
+            cb.setChecked(false);
+            cancerName = r.getCancerType();
+            cancerType = RHMDataCenter.cancerLookUp.get(cancerName);
+            placeMarker(r.getLat(),r.getLon());
+        }
+    }
+
     public void markerAUseLoc(){
         Location location = getLocation();
 
@@ -252,6 +273,11 @@ public class RHMMap extends Activity implements OnMapReadyCallback, LocationList
 
         // TODO Auto-generated method stub
 
+    }
+
+    protected void onResume(){
+        super.onResume();
+        checkFav();
     }
 
 

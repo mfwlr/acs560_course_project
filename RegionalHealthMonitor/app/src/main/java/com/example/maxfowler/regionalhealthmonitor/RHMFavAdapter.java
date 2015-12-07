@@ -102,7 +102,7 @@ public class RHMFavAdapter extends BaseAdapter implements OnClickListener{
             public void onClick(View sV){
                 RHMFav rhmf = (RHMFav)act;
 
-               // rhmf.onItemClick(pos);
+                rhmf.onItemClick(pos);
             }
         }
     }
