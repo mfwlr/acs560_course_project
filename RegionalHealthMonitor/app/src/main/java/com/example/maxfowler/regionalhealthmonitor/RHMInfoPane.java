@@ -14,11 +14,17 @@ import android.graphics.Color;
 
 import android.content.Context;
 
+/**
+ * RHMInfoPane handles some of the information display for the google map markers
+ */
 public class RHMInfoPane implements GoogleMap.InfoWindowAdapter{
 
     private Context mContext;
 
-
+    /**
+     * Constructor, to set up the map context
+     * @param mContext
+     */
     public RHMInfoPane(Context mContext){
         this.mContext = mContext;
 
@@ -26,11 +32,17 @@ public class RHMInfoPane implements GoogleMap.InfoWindowAdapter{
 
 
         @Override
+        /**
+         * Basically does nothing D:
+         */
         public View getInfoWindow(Marker arg0) {
             return null;
         }
 
         @Override
+        /**
+         * getInfoContents sets up the info display for a given marker
+         */
         public View getInfoContents(Marker marker) {
 
             LinearLayout info = new LinearLayout(mContext);

@@ -16,11 +16,9 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
 
-import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.List;
 import java.util.ArrayList;
-import java.io.IOException;
 
 import android.location.Geocoder;
 import android.location.Address;
@@ -31,13 +29,18 @@ import android.content.Context;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * RHMDataCenter is a utility class full of statics that acts as the midpoint between
+ * the client side and the server side
+ */
 public class RHMDataCenter {
 
     public static HashMap<String, Integer> stateLookUp = null;
     public static HashMap<String, Integer> cancerLookUp = null;
 
     /**
-     * A convenient, although awful, way to initialize a list of state to int code lookups.
+     * A convenient, although awful, way to initialize a list of state to int code lookups
+     * and cancer to int code lookups.
      * Forgive the poor design
      */
     public static void initLookUpTables(){
@@ -114,6 +117,12 @@ public class RHMDataCenter {
 
     }
 
+    /**
+     * loginResults returns the success or failure of a user's login.
+     * @param email
+     * @param pwd
+     * @return
+     */
     public static boolean loginResults(String email, String pwd){
         //http://ws.instrumentsafe.com/l/castonzo@gmail.com/foo
         enableStrictMode();
@@ -130,6 +139,13 @@ public class RHMDataCenter {
         return true;
     }
 
+    /**
+     * Get Cancer Data will obtain the data for a given county, cancer type, and state
+     * @param cn
+     * @param ct
+     * @param sc
+     * @return
+     */
     public static JSONObject getCancerData(String cn, int ct, int sc){
         enableStrictMode();
 
@@ -148,6 +164,13 @@ public class RHMDataCenter {
 
     }
 
+    /**
+     * Get Location Info is how the application fetches the google maps
+     * api information for a given latitude and longitude
+     * @param lat
+     * @param lng
+     * @return
+     */
     public static JSONObject getLocationInfo(double lat, double lng) {
 
         enableStrictMode();
@@ -157,6 +180,12 @@ public class RHMDataCenter {
         return httpToJson(httpGet);
     }
 
+    /**
+     * This method fetches the bookmarks for a given httpget string, that specifies the user whose
+     * bookmarks we want
+     * @param st
+     * @return
+     */
     private static JSONArray getBooks(String st){
         enableStrictMode();
 
@@ -165,6 +194,13 @@ public class RHMDataCenter {
         return httpToJarray(httpGet);
     }
 
+    /**
+     * Determine favorite checks to see if a given county is favorited by a user
+     * @param countyName
+     * @param email
+     * @param pwd
+     * @return
+     */
     public static boolean determineFav(String countyName, String email, String pwd){
         //http://ws.instrumentsafe.com/gb/get_bookmarks/wcastonzo5@comcast.net/foo
 
@@ -184,6 +220,11 @@ public class RHMDataCenter {
         return false;
     }
 
+    /**
+     * prepBuilder preps the httpget and returns a stringbuilder for creating JSON
+     * @param httpGet
+     * @return
+     */
     private static StringBuilder prepBuilder(HttpGet httpGet){
         HttpClient client = new DefaultHttpClient();
         HttpResponse response;
@@ -204,6 +245,11 @@ public class RHMDataCenter {
         return stringBuilder;
     }
 
+    /**
+     * This methods returns a JSON Array from an httpget
+     * @param httpGet
+     * @return
+     */
     public static JSONArray httpToJarray(HttpGet httpGet){
 
         StringBuilder stringBuilder=prepBuilder(httpGet);
@@ -217,6 +263,11 @@ public class RHMDataCenter {
         return jsonObject;
     }
 
+    /**
+     * This method returns a JSON Object from an httpget
+     * @param httpGet
+     * @return
+     */
     public static JSONObject httpToJson(HttpGet httpGet){
         StringBuilder stringBuilder=prepBuilder(httpGet);
 
@@ -230,6 +281,13 @@ public class RHMDataCenter {
         return jsonObject;
     }
 
+    /**
+     * This method gets the county for a given latitude and longitude, leveraging the google maps API
+     * through getLocationInfo
+     * @param lat
+     * @param lng
+     * @return
+     */
     public static String getCounty(double lat, double lng){
         JSONObject jsn = getLocationInfo(lat, lng);
         int selection = -1;
@@ -264,12 +322,24 @@ public class RHMDataCenter {
         return null;
     }
 
+    /**
+     * enableStrictMode forces the main thread to deal with web stuff
+     * This is not ideal, but it was much easier than dealing with Asynchronocity for tasks that
+     * are needed before the app does anything else...
+     */
     public static void enableStrictMode(){
-        //Sloppy -> convert to Async task before final ideally
+        //Sloppy :(
         StrictMode.ThreadPolicy policy  = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
     }
 
+    /**
+     * getState gets the state for a given latitude and longitude
+     * @param lat
+     * @param lng
+     * @param base
+     * @return
+     */
     public static String getState(double lat, double lng, Context base){
         //Geocoder practice -> did not give me the county name :(
        Geocoder gcd = new Geocoder(base, Locale.getDefault());
@@ -288,6 +358,16 @@ public class RHMDataCenter {
         return stateName;
     }
 
+    /**
+     * This makes an RHMPointData to represent a given map pin
+     * @param countyName
+     * @param cancerName
+     * @param cancerType
+     * @param stateName
+     * @param lat
+     * @param lon
+     * @return
+     */
     public static RHMPointData makeRPD(String countyName, String cancerName,  int cancerType, String stateName, double lat, double lon){
 
         int stateCode = (Integer) stateLookUp.get(stateName);
@@ -313,6 +393,11 @@ public class RHMDataCenter {
         return null;
     }
 
+    /**
+     * This handles the httpget to add a new user
+     * @param em
+     * @param pwd
+     */
     public static void addNewUser(String em, String pwd){
         //http://ws.instrumentsafe.com/u/add/wcastonzo2@comcast.net/foo
         enableStrictMode();
@@ -321,6 +406,11 @@ public class RHMDataCenter {
         simpleExecute(httpGet);
     }
 
+    /**
+     * This handles the httpget to edit an existing user
+     * @param em
+     * @param pwd
+     */
     public static void editExistingUser(String em, String pwd){
         enableStrictMode();
         HttpGet httpGet = new HttpGet("http://ws.instrumentsafe.com/u/update/"+em+"/"+pwd);
@@ -328,6 +418,10 @@ public class RHMDataCenter {
         simpleExecute(httpGet);
     }
 
+    /**
+     * simpleExecute executes an http in a simple form, when more advanced execution is not needed
+     * @param httpGet
+     */
     private static void simpleExecute(HttpGet httpGet){
         HttpClient hc = new DefaultHttpClient();
         try{
@@ -338,6 +432,16 @@ public class RHMDataCenter {
 
     }
 
+    /**
+     * This method adds a given county to the logged in user's favorite list
+     * @param name
+     * @param pass
+     * @param cancerName
+     * @param lat
+     * @param lon
+     * @param countyName
+     * @param stateName
+     */
     public static void addFavorite(String name, String pass, String cancerName, double lat,
                                    double lon, String countyName, String stateName){
         //http://ws.instrumentsafe.com/ab/add_bookmark/wcastonzo5@comcast.net/foo/allen/18/53/41.0564660/-85.3312010
@@ -355,6 +459,12 @@ public class RHMDataCenter {
 
     }
 
+    /**
+     * This fetch's a user's favorite list, leveraging getBooks for the JSON
+     * @param email
+     * @param pwd
+     * @return
+     */
     public static ArrayList<RHMFavModel> fetchFavorites(String email, String pwd){
 
         ArrayList<RHMFavModel> list = new ArrayList<RHMFavModel>();

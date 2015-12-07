@@ -11,7 +11,10 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.view.LayoutInflater;
 
-
+/**
+ * This is the Login View Controller, which handles the user login, new user making, and
+ * password recovery
+ */
 public class RHMLogin extends Activity{
 
     private String lns;
@@ -21,6 +24,9 @@ public class RHMLogin extends Activity{
 
 
     @Override
+    /**
+     * Creates the login view
+     */
     protected void onCreate(Bundle savedInstanceState) {
         RHMDataCenter.initLookUpTables();
         super.onCreate(savedInstanceState);
@@ -32,7 +38,10 @@ public class RHMLogin extends Activity{
         login.setOnClickListener(new LoginListener());
     }
 
-
+    /**
+     * This is a login listener which checks to see if a user can be logged in and then
+     * does
+     */
     private class LoginListener implements OnClickListener{
 
         @Override
@@ -56,6 +65,10 @@ public class RHMLogin extends Activity{
         }
     }
 
+    /**
+     * This validates the inputs, based on the email having a @ and the password being 3 or more characters
+     * @return
+     */
     private boolean validateInputs(){
 
         boolean retVal = true;
@@ -81,6 +94,10 @@ public class RHMLogin extends Activity{
 
     }
 
+    /**
+     * Login uses RHMDataCenter to attempt a login and reports an error on failure
+     * @return
+     */
     public boolean login(){
        boolean retVal = RHMDataCenter.loginResults(lns, pws);
         if(!retVal){
@@ -90,19 +107,37 @@ public class RHMLogin extends Activity{
         return retVal;
     }
 
+    /**
+     * Adds a user!
+     * @param v
+     */
     public void addUser(View v){
         handleUser(0, "Add User");
     }
 
+    /**
+     * Updates a password.
+     * @param v
+     */
     public void forgotPwd(View v){
         handleUser(1, "New Password");
     }
 
+    /**
+     * Just an inbetween method call to build the alert for a new user/password update
+     * @param choice
+     * @param title
+     */
     public void handleUser(int choice, String title){
         buildAlert(title, choice);
 
     }
 
+    /**
+     * Build an alert dialog for new user/password update needs
+     * @param title
+     * @param choice
+     */
     public void buildAlert(String title, int choice){
 
 

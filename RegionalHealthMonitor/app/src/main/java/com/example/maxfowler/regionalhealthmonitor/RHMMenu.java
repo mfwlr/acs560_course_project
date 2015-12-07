@@ -8,11 +8,17 @@ import android.content.Intent;
 import android.widget.TabHost.OnTabChangeListener;
 
 
+/**
+ * The tab menu of the project, which holds the map and fav list.
+ */
 public class RHMMenu extends TabActivity implements OnTabChangeListener{
 
     TabHost hoster;
 
     @Override
+    /**
+     * Create the tab menu
+     */
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rhmmenu);
@@ -43,6 +49,10 @@ public class RHMMenu extends TabActivity implements OnTabChangeListener{
         hoster.getTabWidget().getChildAt(0).setBackgroundResource(android.R.drawable.ic_menu_mapmode);
     }
 
+    /**
+     * Change the selected tab
+     * @param tabID
+     */
     public void onTabChanged(String tabID){
         for(int i=0; i < hoster.getTabWidget().getChildCount();i++){
             if(i == 0){

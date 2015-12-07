@@ -31,10 +31,10 @@ import android.view.MenuItem;
 
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.content.Intent;
 
-
-
+/**
+ * This is the map view which displays a map and displays the map pin for given selections.
+ */
 public class RHMMap extends Activity implements OnMapReadyCallback, LocationListener,
         GoogleMap.OnMapClickListener, PopupMenu.OnMenuItemClickListener, GoogleMap.OnInfoWindowClickListener{
 
@@ -61,6 +61,10 @@ public class RHMMap extends Activity implements OnMapReadyCallback, LocationList
     private RHMPointData currentRPDB;
 
 
+    /**
+     * Establish the map view, using the user's current location and pancreatic cancer as defaults.
+     * @param instanceState
+     */
     public void onCreate(Bundle instanceState){
         super.onCreate(instanceState);
         setContentView(R.layout.rhmmap);
@@ -79,6 +83,10 @@ public class RHMMap extends Activity implements OnMapReadyCallback, LocationList
 
     }
 
+    /**
+     * Get the user's location
+     * @return
+     */
     public Location getLocation(){
 
         if(!usePosition){
@@ -118,6 +126,10 @@ public class RHMMap extends Activity implements OnMapReadyCallback, LocationList
        return location;
     }
 
+    /**
+     * If the map is ready, set up the user's location mark
+     * @param googleMap
+     */
     public void onMapReady(GoogleMap googleMap) {
 
         mMap = googleMap;
@@ -127,6 +139,9 @@ public class RHMMap extends Activity implements OnMapReadyCallback, LocationList
 
     }
 
+    /**
+     * Check if a pin is a favorite using the fav model from the application singleton
+     */
     public void checkFav(){
         RHMFavModel r = ((RHMAppData)this.getApplication()).fetchInfo();
         int mark = ((RHMAppData)this.getApplication()).fetchMark();
@@ -148,6 +163,9 @@ public class RHMMap extends Activity implements OnMapReadyCallback, LocationList
         }
     }
 
+    /**
+     * Set MarkerA on the user's location
+     */
     public void markerAUseLoc(){
         Location location = getLocation();
 
@@ -181,6 +199,11 @@ public class RHMMap extends Activity implements OnMapReadyCallback, LocationList
         }
     }
 
+    /**
+     * Place a given marker at either lat or lon
+     * @param lat
+     * @param lon
+     */
     public void placeMarker(double lat, double lon){
 
 
@@ -242,6 +265,9 @@ public class RHMMap extends Activity implements OnMapReadyCallback, LocationList
 
     @Override
 
+    /**
+     * If the user's location changes, set MarkerA using location IF the user is using location
+     */
     public void onLocationChanged(Location location) {
         if(curMark == 0 && usePosition == true){
             markerAUseLoc();
@@ -275,12 +301,19 @@ public class RHMMap extends Activity implements OnMapReadyCallback, LocationList
 
     }
 
+    /**
+     * On resume, check for a favorite to load
+     */
     protected void onResume(){
         super.onResume();
         checkFav();
     }
 
 
+    /**
+     * Show the popup for selecting a new cancer type
+     * @param v
+     */
     public void showPopup(View v) {
         cancerPopUp = new PopupMenu(this, v);
         MenuInflater inflater = cancerPopUp.getMenuInflater();
@@ -291,6 +324,10 @@ public class RHMMap extends Activity implements OnMapReadyCallback, LocationList
         curMarkerB.remove();
     }
 
+    /**
+     * Change the marker being used between Marker A and B
+     * @param v
+     */
     public void changeMarker(View v) {
         Button b = (Button) this.findViewById(R.id.MarkerToggle);
         if(curMark == 0){
@@ -303,6 +340,11 @@ public class RHMMap extends Activity implements OnMapReadyCallback, LocationList
 
     }
 
+    /**
+     * This is the menu for changing the selected cancer type
+     * @param item
+     * @return
+     */
     public boolean onMenuItemClick(MenuItem item) {
 
         switch (item.getItemId()) {
@@ -350,6 +392,11 @@ public class RHMMap extends Activity implements OnMapReadyCallback, LocationList
         return true;
     }
 
+    /**
+     * When a user clicks the map, load a point in that location UNLESS it is Marker A
+     * and location is being used
+     * @param latlng
+     */
     public void onMapClick(LatLng latlng){
         System.out.println(latlng.latitude + "     " + latlng.longitude);
         if(curMark == 1) {
@@ -366,11 +413,19 @@ public class RHMMap extends Activity implements OnMapReadyCallback, LocationList
         }
     }
 
+    /**
+     * toggleLocation changes whether or not the map is using user location
+     * @param v
+     */
     public void toggleLocation(View v){
         CheckBox cb = (CheckBox) this.findViewById(R.id.LocationToggle);
         usePosition = cb.isChecked();
     }
 
+    /**
+     * onInfoWindowClick adds a favorite for a given map point and the current user
+     * @param marker
+     */
     public void onInfoWindowClick(Marker marker){
         RHMUser u = ((RHMAppData)this.getApplication()).getUser();
        if(curMark == 0){
