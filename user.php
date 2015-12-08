@@ -2,7 +2,6 @@
 require ("/home/isafeuser/ws.instrumentsafe.com/config.php");
 require("/home/isafeuser/ws.instrumentsafe.com/public/classes/User.php");
 
-//user.php?o=$1&u=$2&p=$3&c=$4&s=$5&d=$6
 $op = trim($_REQUEST['o']);
 $username = trim($_REQUEST['u']);
 $password = trim($_REQUEST['p']);
@@ -48,9 +47,7 @@ else if($op=="update"){
 	$errorMsg = "Invalid operation: ".$op;
 	$errorResultArr = array("error"=>1,"error_message"=>$errorMsg); 		                            
 	
-	header('Content-type: application/json');
-	echo json_encode($errorResultArr);
-	exit();
+	$user->SendJson($errorResultArr);
 }
 
 
@@ -62,9 +59,7 @@ function validateInputData($u,$p,$o){
 	     $errorMsg = "Invalid username or password";
 	     $errorResultArr = array("error"=>1,"error_message"=>$errorMsg); 		                            
 
-		header('Content-type: application/json');
-		echo json_encode($errorResultArr);
-		exit();
+		 $user->SendJson($errorResultArr);
 	}
 	
 }

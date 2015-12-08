@@ -436,6 +436,13 @@ class User {
 
 
     }
+    
+    public function SendJson($arr){
+    
+    	header('Content-type: application/json');
+		echo json_encode($errorResultArr);
+		exit();
+	}
 
     private function Connect(){
 
