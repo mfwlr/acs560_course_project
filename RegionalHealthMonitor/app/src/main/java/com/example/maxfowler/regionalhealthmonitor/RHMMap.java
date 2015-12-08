@@ -1,10 +1,7 @@
 package com.example.maxfowler.regionalhealthmonitor;
 
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.app.Activity;
-import android.Manifest;
-import android.content.pm.PackageManager;
 
 import android.app.Dialog;
 import android.app.AlertDialog;
@@ -30,48 +27,66 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Marker;
 
-import android.widget.PopupMenu;
 import android.view.MenuItem;
 
+import android.widget.Button;
+import android.widget.CheckBox;
 
 /**
- * Created by maxfowler on 11/5/15.
+ * This is the map view which displays a map and displays the map pin for given selections.
  */
-public class RHMMap extends Activity implements OnMapReadyCallback, LocationListener, PopupMenu.OnMenuItemClickListener{
+public class RHMMap extends Activity implements OnMapReadyCallback, LocationListener,
+        GoogleMap.OnMapClickListener, PopupMenu.OnMenuItemClickListener, GoogleMap.OnInfoWindowClickListener{
 
-    private String currentCounty;
+
     private boolean usePosition;
+    private int curMark;
     private LatLng pos;
+
+    private static int LL_TOLERANCE = 10;
+
     private int cancerType;
     private String cancerName;
     private GoogleMap mMap;
 
-    private PopupMenu popup;
+    private PopupMenu cancerPopUp;
 
-    private Marker curMarker;
+    private Marker curMarkerA;
+    private Marker curMarkerB;
 
     private double curLat;
     private double curLon;
 
-    private RHMPointData currentRPD;
+    private RHMPointData currentRPDA;
+    private RHMPointData currentRPDB;
 
+
+    /**
+     * Establish the map view, using the user's current location and pancreatic cancer as defaults.
+     * @param instanceState
+     */
     public void onCreate(Bundle instanceState){
         super.onCreate(instanceState);
         setContentView(R.layout.rhmmap);
+
+        System.out.println("Current user " + ((RHMAppData) this.getApplication()).getUser());
+
 
         usePosition = true;
         cancerType = 40;
         cancerName = "Pancreas";
 
+        curMark = 0;
+
         MapFragment mf = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
         mf.getMapAsync(this);
 
-
-
-
-
     }
 
+    /**
+     * Get the user's location
+     * @return
+     */
     public Location getLocation(){
 
         if(!usePosition){
@@ -111,15 +126,55 @@ public class RHMMap extends Activity implements OnMapReadyCallback, LocationList
        return location;
     }
 
+    /**
+     * If the map is ready, set up the user's location mark
+     * @param googleMap
+     */
     public void onMapReady(GoogleMap googleMap) {
 
         mMap = googleMap;
+        mMap.setOnMapClickListener(this);
+        markerAUseLoc();
+
+
+    }
+
+    /**
+     * Check if a pin is a favorite using the fav model from the application singleton
+     */
+    public void checkFav(){
+        RHMFavModel r = ((RHMAppData)this.getApplication()).fetchInfo();
+        int mark = ((RHMAppData)this.getApplication()).fetchMark();
+        if(mark == 0){
+            curMark = 0;
+            usePosition = false;
+            CheckBox cb = (CheckBox) this.findViewById(R.id.LocationToggle);
+            cb.setChecked(false);
+            cancerName = r.getCancerType();
+            cancerType = RHMDataCenter.cancerLookUp.get(cancerName);
+            placeMarker(r.getLat(),r.getLon());
+        }else if(mark == 1){
+            curMark = 1;
+            CheckBox cb = (CheckBox) this.findViewById(R.id.LocationToggle);
+            cb.setChecked(false);
+            cancerName = r.getCancerType();
+            cancerType = RHMDataCenter.cancerLookUp.get(cancerName);
+            placeMarker(r.getLat(),r.getLon());
+        }
+    }
+
+    /**
+     * Set MarkerA on the user's location
+     */
+    public void markerAUseLoc(){
         Location location = getLocation();
 
 
         //View file for pin
+
         RHMInfoPane rip = new RHMInfoPane(getBaseContext());
         mMap.setInfoWindowAdapter(rip);
+        mMap.setOnInfoWindowClickListener(this);
 
 
         double lat = 0;
@@ -135,19 +190,32 @@ public class RHMMap extends Activity implements OnMapReadyCallback, LocationList
             lon = -85;
         }
 
-        placeMaker(lat, lon);
-        curLat = lat;
-        curLon = lon;
+        if(lat > curLat + LL_TOLERANCE || lat < curLat - LL_TOLERANCE ||
+                lon > curLon+LL_TOLERANCE || lon < curLon-LL_TOLERANCE) {
 
-
+            placeMarker(lat, lon);
+            curLat = lat;
+            curLon = lon;
+        }
     }
 
-    public void placeMaker(double lat, double lon){
+    /**
+     * Place a given marker at either lat or lon
+     * @param lat
+     * @param lon
+     */
+    public void placeMarker(double lat, double lon){
 
 
         String stateName = RHMDataCenter.getState(lat, lon, getBaseContext());
 
         String countyName = RHMDataCenter.getCounty(lat, lon);
+
+        if(countyName == null){
+            new AlertDialog.Builder(this).setTitle("Error").setMessage("There was an issue with the google API and it returned a null county").show();
+        }
+
+        System.out.println("This is the county name " + countyName);
 
         String s = lat+"\n"+lon+
                 "\n\nCounty name: " + countyName
@@ -155,41 +223,55 @@ public class RHMMap extends Activity implements OnMapReadyCallback, LocationList
 
         // new AlertDialog.Builder(this).setTitle("Sample").setMessage(s).show();
 
-        currentRPD = RHMDataCenter.makeRPD(countyName, cancerName, cancerType, stateName);
-        curMarker = mMap.addMarker(new MarkerOptions().position(pos).title(currentRPD.buildTitle()).snippet(currentRPD.buildSnippet()).icon(BitmapDescriptorFactory.defaultMarker(currentRPD.severityHue())));
-        CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(pos, 12);
-        mMap.moveCamera(cu);
+        //Use allen as a default if all else fails
+        if(countyName == null){
+            new AlertDialog.Builder(this).setTitle("Error Warning").setMessage("Failed to get county - ensure network connection.  Default to allen").show();
+            countyName = "allen";
+            lat = 45;
+            lon = -80;
+        }
+
+        LatLng pos = new LatLng(lat, lon);
+
+        RHMUser u = ((RHMAppData)this.getApplication()).getUser();
+
+        RHMPointData temporary = RHMDataCenter.makeRPD(countyName, cancerName, cancerType, stateName, lat, lon);
+
+        if(temporary == null){
+            new AlertDialog.Builder(this).setTitle("Error").setMessage("Unsupported county name due to data format errors - sorry!").show();
+            return;
+        }
+
+        if(curMark == 0){
+            if(curMarkerA !=  null) {
+                curMarkerA.remove();
+            }
+            currentRPDA = temporary;
+            currentRPDA.determineFavorite(u.getName(), u.getPass());
+            curMarkerA = mMap.addMarker(new MarkerOptions().position(pos).title(currentRPDA.buildTitle()).snippet(currentRPDA.buildSnippet()).icon(BitmapDescriptorFactory.defaultMarker(currentRPDA.severityHue())));
+        }else{
+            if(curMarkerB !=  null) {
+                curMarkerB.remove();
+            }
+            currentRPDB = temporary;
+            currentRPDB.determineFavorite(u.getName(), u.getPass());
+            curMarkerB = mMap.addMarker(new MarkerOptions().position(pos).title(currentRPDB.buildTitle()).snippet(currentRPDB.buildSnippet()).icon(BitmapDescriptorFactory.defaultMarker(currentRPDB.severityHue())));
+        }
+        if(curMark == 0 && usePosition) {
+            CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(pos, 12);
+            mMap.moveCamera(cu);
+        }
     }
 
     @Override
 
+    /**
+     * If the user's location changes, set MarkerA using location IF the user is using location
+     */
     public void onLocationChanged(Location location) {
-
-     /*   // Getting latitude of the current location
-
-        double latitude = location.getLatitude();
-
-
-        // Getting longitude of the current location
-
-        double longitude = location.getLongitude();
-
-
-        // Creating a LatLng object for the current location
-
-        LatLng latLng = new LatLng(latitude, longitude);
-
-
-        // Showing the current location in Google Map
-
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-
-
-        // Zoom in the Google Map
-
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(15));*/
-
-
+        if(curMark == 0 && usePosition == true){
+            markerAUseLoc();
+        }
     }
 
 
@@ -219,63 +301,145 @@ public class RHMMap extends Activity implements OnMapReadyCallback, LocationList
 
     }
 
-
-    public void showPopup(View v) {
-        popup = new PopupMenu(this, v);
-        MenuInflater inflater = popup.getMenuInflater();
-       inflater.inflate(R.menu.menu, popup.getMenu());
-        popup.show();
-        //Change cancer type
-        cancerName = "Leukemia";
-        cancerType = 90;
-        curMarker.remove();
-        System.out.println("Working?");
-        placeMaker(curLat, curLon);
+    /**
+     * On resume, check for a favorite to load
+     */
+    protected void onResume(){
+        super.onResume();
+        checkFav();
     }
 
+
+    /**
+     * Show the popup for selecting a new cancer type
+     * @param v
+     */
+    public void showPopup(View v) {
+        cancerPopUp = new PopupMenu(this, v);
+        MenuInflater inflater = cancerPopUp.getMenuInflater();
+       inflater.inflate(R.menu.menu, cancerPopUp.getMenu());
+        cancerPopUp.setOnMenuItemClickListener(this);
+        cancerPopUp.show();
+        curMarkerA.remove();
+        curMarkerB.remove();
+    }
+
+    /**
+     * Change the marker being used between Marker A and B
+     * @param v
+     */
+    public void changeMarker(View v) {
+        Button b = (Button) this.findViewById(R.id.MarkerToggle);
+        if(curMark == 0){
+            curMark =1 ;
+            b.setText("Marker: B");
+        } else{
+            curMark = 0;
+            b.setText("Marker: A");
+        }
+
+    }
+
+    /**
+     * This is the menu for changing the selected cancer type
+     * @param item
+     * @return
+     */
     public boolean onMenuItemClick(MenuItem item) {
-        System.out.println("HAHAHAHA");
-        System.out.println(item.getItemId());
+
         switch (item.getItemId()) {
             case R.id.one:
-
-               break;
+                cancerName = "Brain";
+                break;
             case R.id.two:
-
-               break;
+                cancerName = "Breast Cancer";
+                break;
             case R.id.three:
-
+                cancerName = "Lung";
                 break;
             case R.id.four:
-
+                cancerName = "Cervix";
                 break;
             case R.id.five:
-
+                cancerName = "Colon and Rectum";
                 break;
             case R.id.six:
-
+                cancerName = "Esophagus";
                 break;
             case R.id.seven:
-
-                return true;
+                cancerName = "Kidney and Pelvis";
+               break;
             case R.id.eight:
                 cancerName = "Leukemia";
-                cancerType = 90;
                 break;
-
             case R.id.nine:
                 cancerName = "Pancreas";
-                cancerType = 40;
                 break;
             default:
                 return false;
         }
-        placeMaker(curLat, curLon);
+        cancerType = RHMDataCenter.cancerLookUp.get(cancerName);
+        int tcm = curMark;
+        curMark = 0;
+        if(currentRPDA != null) {
+            placeMarker(currentRPDA.getLatitude(), currentRPDA.getLongitude());
+        }
+        curMark = 1;
+        if(currentRPDB != null) {
+            placeMarker(currentRPDB.getLatitude(), currentRPDB.getLongitude());
+        }
+        curMark = tcm;
         return true;
     }
 
+    /**
+     * When a user clicks the map, load a point in that location UNLESS it is Marker A
+     * and location is being used
+     * @param latlng
+     */
+    public void onMapClick(LatLng latlng){
+        System.out.println(latlng.latitude + "     " + latlng.longitude);
+        if(curMark == 1) {
+            if (curMarkerB != null) {
+                curMarkerB.remove();
+            }
+            placeMarker(latlng.latitude, latlng.longitude);
+        }else if(curMark == 0 && !usePosition){
+            if(curMarkerA != null){
+                curMarkerA.remove();
+        }
+            placeMarker(latlng.latitude, latlng.longitude);
 
+        }
+    }
 
+    /**
+     * toggleLocation changes whether or not the map is using user location
+     * @param v
+     */
+    public void toggleLocation(View v){
+        CheckBox cb = (CheckBox) this.findViewById(R.id.LocationToggle);
+        usePosition = cb.isChecked();
+    }
+
+    /**
+     * onInfoWindowClick adds a favorite for a given map point and the current user
+     * @param marker
+     */
+    public void onInfoWindowClick(Marker marker){
+        RHMUser u = ((RHMAppData)this.getApplication()).getUser();
+       if(curMark == 0){
+           if(currentRPDA != null){
+               currentRPDA.addFavorite(u.getName(), u.getPass());
+           }
+       }else{
+           if(currentRPDB != null){
+               currentRPDB.addFavorite(u.getName(), u.getPass());
+           }
+
+       }
+
+    }
 
 }
 

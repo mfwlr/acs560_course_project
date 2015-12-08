@@ -10,31 +10,50 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class RHMFavModel extends ArrayAdapter<String> {
-    private final Context context;
-    private String[] favorites;
+public class RHMFavModel{
+    private String stateName;
+    private String countyName;
+    private double lat;
+    private double lon;
+    private String cancerType;
 
-    public RHMFavModel(Context context, String[] values) {
-        super(context, -1, values);
-        this.context = context;
-        this.favorites = values;
+    public void setStateName(String stateName) {
+        this.stateName = stateName;
     }
 
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-      /*  LayoutInflater inflater = (LayoutInflater) context
-                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View rowView = inflater.inflate(R.layout.rowlayout, parent, false);
-        TextView textView = (TextView) rowView.findViewById(R.id.label);
-        ImageView imageView = (ImageView) rowView.findViewById(R.id.icon);
-        textView.setText(values[position]);
-
-        return rowView;*/
-
-        return null;
+    public void setCountyName(String countyName) {
+        this.countyName = countyName;
     }
 
-    public ArrayList<String> getList(){
-        return new ArrayList<String>(Arrays.asList(favorites));
+    public void setLat(double lat) {
+        this.lat = lat;
+    }
+
+    public void setLon(double lon) {
+        this.lon = lon;
+    }
+
+    public void setCancerType(String cancerType) {
+        this.cancerType = cancerType;
+    }
+
+    public String getStateName() {
+        return stateName;
+    }
+
+    public String getCountyName() {
+        return countyName;
+    }
+
+    public double getLat() {
+        return lat;
+    }
+
+    public double getLon() {
+        return lon;
+    }
+
+    public String getCancerType() {
+        return cancerType;
     }
 }

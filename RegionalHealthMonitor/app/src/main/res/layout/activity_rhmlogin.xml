@@ -34,49 +34,83 @@
         android:layout_height="wrap_content"
         android:text="LOGIN"
         android:id="@+id/logButton"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
         android:height="25dp"
         android:width="200dp"
         android:textSize="20dp"
-        android:textColor="#ffffff"
+        android:textColor="@color/textC"
         android:textAlignment="center"
-        android:background="#0629b6" />
+        android:background="@color/logins"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
 
     <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="550dp"
+        android:layout_height="50dp"
         android:inputType="textEmailAddress"
         android:ems="10"
         android:id="@+id/logName"
-        android:layout_alignParentLeft="true"
-        android:layout_marginBottom="108dp"
-        android:background="#000986"
+        android:background="@color/logins"
         android:width="500dp"
         android:height="40dp"
-        android:textColor="#ffffff"
-        android:layout_above="@+id/logButton"
-        android:layout_alignParentRight="true"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp" />
+        android:textColor="@color/textC"
+        android:layout_marginTop="150dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
 
     <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="500dp"
+        android:layout_height="50dp"
         android:inputType="textPassword"
         android:ems="10"
         android:id="@+id/logPass"
-        android:layout_alignParentLeft="true"
         android:layout_alignTop="@+id/logName"
+        android:layout_marginTop="80dp"
+        android:width="500dp"
+        android:background="@color/logins"
+        android:textColor="@color/textC"
         android:layout_alignLeft="@+id/logName"
         android:layout_alignStart="@+id/logName"
-        android:layout_marginTop="36dp"
-        android:width="500dp"
-        android:background="#000986"
-        android:textColor="#ffffff"
-        android:layout_alignParentRight="true"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp" />
+        android:layout_alignRight="@+id/logName"
+        android:layout_alignEnd="@+id/logName" />
+
+        <LinearLayout android:layout_width="fill_parent"
+            android:orientation="horizontal"
+            android:id="@+id/loginSupport"
+            android:layout_gravity="bottom"
+            android:background="@color/black"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/logButton"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="35dp">
+        <Button android:layout_weight="1"
+            android:text="Forgot Password"
+            android:height="14dp"
+            android:textSize="15sp"
+            android:textColor="@color/textC"
+            android:background="@color/logins"
+            android:layout_width="wrap_content"
+            android:layout_height="26dp"
+            android:id="@+id/CancerToggle"
+            android:onClick="forgotPwd"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp">
+        </Button>
+        <Button android:layout_weight="1"
+            android:text="New User"
+            android:height="14dp"
+            android:textSize="15sp"
+            android:textColor="@color/textC"
+            android:background="@color/logins"
+            android:layout_width="wrap_content"
+            android:layout_height="26dp"
+            android:id="@+id/NewUser"
+            android:onClick="addUser"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="5dp">
+        </Button>
+        </LinearLayout>
     </RelativeLayout>
 
 </RelativeLayout>
